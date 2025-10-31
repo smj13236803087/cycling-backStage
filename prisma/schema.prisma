@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model User {
+  id                  String              @id @default(uuid())
+  displayName         String
+  email               String              @unique
+  avatar        String?
+  password            String
+  gender              Gender?
+  age                 Int
+  region              String?
+  birthday            DateTime?
+  height              Int?
+  weight              Float?
+  createdTime         DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  rideRecordRoutes    RideRecordRoute[]
+  manualCreatedRoutes ManualCreatedRoute[]
+}
+
+model RideRecordRoute {
+  id                String    @id @default(uuid())
+  startCoordinate   String
+  endCoordinate     String
+  startAddress      String
+  endAddress        String
+  createdTime       DateTime  @default(now())
+  distance          Float     // 单位：米
+  duration          Float     // 单位：秒
+  elevation         Float?
+  avgSpeed          Float?
+  route             Json      // 存储坐标点数组（[{lat, lng}, ...]）
+  uphillDistance    Float?
+  downhillDistance  Float?
+  flatDistance      Float?
+  avgAltitude       Float?
+  maxAltitude       Float?
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+}
+
+model ManualCreatedRoute {
+  id                String    @id @default(uuid())
+  createdTime       DateTime  @default(now())
+  startName         String
+  startCoord        String
+  endName           String
+  endCoord          String
+  waypoints         Json?     // [{lat, lng}, ...]
+  distance          Float
+  duration          Float
+  encodedPolyline   String?   // Google Maps Polyline
+  mainRoute         Json?
+  waypointRoutes    Json?
+  heatConsumption   Float?
+  route             Json?
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+}
