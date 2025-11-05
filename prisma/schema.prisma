@@ -53,6 +53,7 @@ model RideRecordRoute {
   flatDistance      Float?
   avgAltitude       Float?
   maxAltitude       Float?
+  heatConsumption   Float?
   userId            String
   user              User      @relation(fields: [userId], references: [id])
 }
