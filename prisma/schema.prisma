@@ -27,8 +27,8 @@ model User {
   gender              Gender?
   age                 Int
   region              String?
-  birthday            DateTime?
-  height              Int?
+  birthday            String?
+  height              Float?
   weight              Float?
   createdTime         DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
