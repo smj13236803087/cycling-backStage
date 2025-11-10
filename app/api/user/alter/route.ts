@@ -72,7 +72,6 @@ export async function POST(req: Request) {
       where: { id: userId },
       data: updateData,
       select: {
-        id: true,
         displayName: true,
         email: true,
         avatar: true,

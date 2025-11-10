@@ -64,7 +64,7 @@ export async function POST(req: Request) {
           gender: finalGender,
           age: age || 0,
           region: region || "",
-          birthday: birthday ? new Date(birthday) : null,
+          birthday: birthday || "",
           height: height || 0,
           weight: weight || 0,
         },
