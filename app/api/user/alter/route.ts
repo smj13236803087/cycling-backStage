@@ -1,37 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || "";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 export async function POST(req: Request) {
   try {
-    // 1️⃣ 获取 Authorization 头
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "缺少授权头" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    // 2️⃣ 验证 JWT
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json({ error: "JWT 无效或已过期" }, { status: 403 });
-    }
-
-    // 3️⃣ 读取请求体
+    const user = await requireAuth();
     const body = await req.json();
     console.log("Received body:", body);
 
     let userId = body.userId as string;
-    if (!userId && decoded?.id) {
-      userId = decoded.id;
-    }
-    if (!userId) {
-      return NextResponse.json({ error: "缺少 userId 参数" }, { status: 400 });
+    if (userId !== user.id) {
+      return NextResponse.json({ error: "无权操作" }, { status: 403 });
     }
 
     const rest = { ...body };

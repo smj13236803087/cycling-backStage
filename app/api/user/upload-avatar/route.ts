@@ -3,34 +3,14 @@ import prisma from "@/app/lib/prisma";
 import fs from "fs";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || "";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 export async function POST(req: Request) {
   try {
-    // 1️⃣ 获取 Authorization 头
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "缺少授权头" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    // 2️⃣ 验证 JWT
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json({ error: "JWT 无效或已过期" }, { status: 403 });
-    }
-
-    // 3️⃣ 获取表单数据
+    const user = await requireAuth();
     const formData = await req.formData();
     const file = formData.get("file") as File;
-
-    // 优先用 token 的 id，如果 formData 有 userId 就覆盖
-    let userId = decoded.id as string;
+    let userId = user.id;
     const formUserId = formData.get("userId") as string;
     if (formUserId) userId = formUserId;
 
