@@ -23,9 +23,9 @@ model User {
   displayName         String
   email               String              @unique
   avatar        String?
-  password            String
+  password            String?
   gender              Gender?
-  age                 Int
+  age                 Int?
   region              String?
   birthday            String?
   height              Float?
@@ -75,4 +75,14 @@ model ManualCreatedRoute {
   route             Json?
   userId            String
   user              User      @relation(fields: [userId], references: [id])
+}
+
+model PendingUser {
+  email            String   @id
+  displayName         String
+  password     String
+  verificationCode String
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

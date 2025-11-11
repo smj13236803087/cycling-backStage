@@ -1,27 +1,41 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { verifyJwt } from "@/app/lib/jwt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || "";
 
 export async function POST(req: Request) {
   try {
+    // 1️⃣ 获取 Authorization 头
     const authHeader = req.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ error: "缺少授权头" }, { status: 401 });
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = await verifyJwt(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "JWT 无效" }, { status: 403 });
+
+    // 2️⃣ 验证 JWT
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return NextResponse.json({ error: "JWT 无效或已过期" }, { status: 403 });
     }
 
+    // 3️⃣ 读取请求体
     const body = await req.json();
     console.log("Received body:", body);
 
-    const { userId, ...rest } = body;
+    let userId = body.userId as string;
+    if (!userId && decoded?.id) {
+      userId = decoded.id;
+    }
     if (!userId) {
       return NextResponse.json({ error: "缺少 userId 参数" }, { status: 400 });
     }
+
+    const rest = { ...body };
+    delete rest.userId;
 
     const field = Object.keys(rest)[0];
     const value = rest[field];
@@ -54,14 +68,9 @@ export async function POST(req: Request) {
         MALE: "MALE",
         FEMALE: "FEMALE",
       };
-
       finalValue = genderMap[value] ?? "OTHER";
     }
-    if (field === "height") {
-      finalValue = parseFloat(value);
-    }
-
-    if (field === "weight") {
+    if (field === "height" || field === "weight") {
       finalValue = parseFloat(value);
     }
 
