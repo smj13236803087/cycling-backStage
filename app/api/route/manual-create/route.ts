@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         endCoord: endCoord,
         waypoints: waypoints,
         distance: parseFloat(distance),
-        duration: parseFloat(duration),
+        duration: duration,
         encodedPolyline: encodedPolyline ?? null,
         mainRoute: mainRoute,
         waypointRoutes: waypointRoutes,

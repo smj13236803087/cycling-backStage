@@ -20,7 +20,8 @@ export async function POST(req: Request) {
       downhillDistance,
       flatDistance,
       avgAltitude,
-      maxAltitude
+      maxAltitude,
+      heatConsumption
     } = data;
     if (userId !== user.id) {
       return NextResponse.json({ error: "无权操作" }, { status: 403 });
@@ -41,7 +42,8 @@ export async function POST(req: Request) {
         downhillDistance: downhillDistance ?? null,
         flatDistance: flatDistance ?? null,
         avgAltitude: avgAltitude ?? null,
-        maxAltitude: maxAltitude ?? null
+        maxAltitude: maxAltitude ?? null,
+        heatConsumption: heatConsumption ?? null,
       }
     });
     return NextResponse.json({ rideRecord });

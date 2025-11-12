@@ -33,6 +33,7 @@ export async function POST(req: Request) {
         flatDistance: true,
         avgAltitude: true,
         maxAltitude: true,
+        heatConsumption: true,
       },
     });
 

@@ -67,7 +67,7 @@ model ManualCreatedRoute {
   endCoord          String
   waypoints         Json?     // [{lat, lng}, ...]
   distance          Float
-  duration          Float
+  duration          String
   encodedPolyline   String?   // Google Maps Polyline
   mainRoute         Json?
   waypointRoutes    Json?
