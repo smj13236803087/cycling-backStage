@@ -7,13 +7,14 @@ import {
   DashboardOutlined,
   LogoutOutlined,
   TeamOutlined,
+  FileTextOutlined,
+  HeatMapOutlined,
 } from '@ant-design/icons'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 
 const { Sider, Content } = Layout
-const { SubMenu } = Menu
 
 export default function DashboardLayout({
   children,
@@ -22,9 +23,9 @@ export default function DashboardLayout({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [selectedKey, setSelectedKey] = useState<string>('1'); // 存储当前选中的菜单项
+  const [selectedKey, setSelectedKey] = useState<string>('dashboard');
   const pathname = usePathname();
-  const [openKeys, setOpenKeys] = useState<string[]>([]); // 存储展开的菜单项
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -62,11 +63,17 @@ export default function DashboardLayout({
   useEffect(() => {
     // 根据当前路由更新选中的菜单项和展开的菜单项
     if (pathname?.includes('/dashboard/users')) {
-      setSelectedKey('2');
-      setOpenKeys(['sub1']);
-    } else if (pathname?.includes('/dashboard/devices')) {
-      setSelectedKey('3');
-      setOpenKeys(['sub2']);
+      setSelectedKey('users');
+      setOpenKeys(['users-submenu']);
+    } else if (pathname?.includes('/dashboard/manual-createRoute')) {
+      setSelectedKey('manual-routes');
+      setOpenKeys(['manual-routes-submenu']);
+    } else if (pathname?.includes('/dashboard/ride-recordRoute')) {
+      setSelectedKey('ride-routes');
+      setOpenKeys(['ride-routes-submenu']);
+    } else {
+      setSelectedKey('dashboard');
+      setOpenKeys([]);
     }
   }, [pathname]);
 
@@ -85,15 +92,6 @@ export default function DashboardLayout({
       console.error('登出错误:', error);
     }
   };
-
-  const items: MenuProps['items'] = [
-    {
-      key: '1',
-      label: '登出',
-      icon: <LogoutOutlined />,
-      onClick: handleLogout,
-    },
-  ];
 
   if (!user) return null;
 
@@ -148,45 +146,46 @@ export default function DashboardLayout({
           theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
-          defaultOpenKeys={openKeys}
+          openKeys={openKeys}
+          onOpenChange={setOpenKeys}
           items={[
             {
-              key: '1',
+              key: 'dashboard',
               icon: <DashboardOutlined />,
               label: <Link href="/dashboard">仪表板</Link>,
             },
             {
-              key: 'sub1',
+              key: 'users-submenu',
               icon: <TeamOutlined />,
               label: '用户管理',
               children: [
                 {
-                  key: '2',
+                  key: 'users',
                   icon: <UserOutlined />,
                   label: <Link href="/dashboard/users">用户列表</Link>,
                 },
               ],
             },
             {
-              key: 'sub2',
-              icon: <TeamOutlined />,
+              key: 'manual-routes-submenu',
+              icon: <FileTextOutlined />,
               label: '手动创建路线管理',
               children: [
                 {
-                  key: '3',
-                  icon: <UserOutlined />,
+                  key: 'manual-routes',
+                  icon: <FileTextOutlined />,
                   label: <Link href="/dashboard/manual-createRoute">手动创建路线列表</Link>,
                 },
               ],
             },
             {
-              key: 'sub3',
-              icon: <TeamOutlined />,
+              key: 'ride-routes-submenu',
+              icon: <HeatMapOutlined />,
               label: '骑行记录路线管理',
               children: [
                 {
-                  key: '4',
-                  icon: <UserOutlined />,
+                  key: 'ride-routes',
+                  icon: <HeatMapOutlined />,
                   label: <Link href="/dashboard/ride-recordRoute">骑行记录路线列表</Link>,
                 },
               ],
