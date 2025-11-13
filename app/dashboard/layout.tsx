@@ -168,6 +168,30 @@ export default function DashboardLayout({
               ],
             },
             {
+              key: 'sub2',
+              icon: <TeamOutlined />,
+              label: '手动创建路线管理',
+              children: [
+                {
+                  key: '3',
+                  icon: <UserOutlined />,
+                  label: <Link href="/dashboard/manual-createRoute">手动创建路线列表</Link>,
+                },
+              ],
+            },
+            {
+              key: 'sub3',
+              icon: <TeamOutlined />,
+              label: '骑行记录路线管理',
+              children: [
+                {
+                  key: '4',
+                  icon: <UserOutlined />,
+                  label: <Link href="/dashboard/ride-recordRoute">骑行记录路线列表</Link>,
+                },
+              ],
+            },
+            {
               key: 'logout',
               icon: <LogoutOutlined />,
               label: '登出',
