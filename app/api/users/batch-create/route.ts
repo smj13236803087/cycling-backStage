@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from "@/app/lib/prisma";
 import bcrypt from 'bcryptjs';
+import { Gender } from '@prisma/client';
+
 // 生成用户数据的函数
 const generateRandomUser = async (id: number) => {
   const password_first = `123456_${id}`;
@@ -11,7 +13,7 @@ const generateRandomUser = async (id: number) => {
     password: hashedPassword,
     createdTime: new Date(),
     age: Number(id),
-    gender: 'male',
+    gender: 'MALE' as Gender,
   };
 };
 

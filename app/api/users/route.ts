@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import bcrypt from "bcryptjs";
+import { Gender } from "@prisma/client";
 
 export async function GET() {
   try {
@@ -11,8 +12,8 @@ export async function GET() {
         age: true,
         gender: true,
         displayName: true,
-        avatar: true, // Include avatar
-        role: true, // Include role
+        avatar: true,
+        role: true,
         createdTime: true,
         updatedAt: true,
         status: true,
@@ -39,22 +40,37 @@ export async function POST(req: Request) {
       role,
       avatar,
     } = await req.json();
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 转换 gender 为大写
+    const normalizedGender = gender ? (gender.toUpperCase() as Gender) : null;
 
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         age,
-        gender,
+        gender: normalizedGender,
         displayName,
-        role, // Save role
-        avatar: avatar, // Save avatar URL
+        role,
+        avatar: avatar || undefined,
+      },
+      select: {
+        id: true,
+        displayName: true,
+        email: true,
+        age: true,
+        gender: true,
+        avatar: true,
+        role: true,
+        createdTime: true,
+        updatedAt: true,
+        status: true,
       },
     });
 
-    const { password: _, ...userWithoutPassword } = user;
-    return NextResponse.json(userWithoutPassword, { status: 201 });
+    return NextResponse.json(user, { status: 201 });
   } catch (error) {
     console.error("Error creating user:", error);
     return NextResponse.json(

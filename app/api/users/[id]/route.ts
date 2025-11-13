@@ -52,8 +52,7 @@ export async function PUT(
       status, 
       role, 
       avatar,
-      birthday,
-      country
+      birthday
     } = await req.json();
     
     const updatedUser = await prisma.user.update({
@@ -66,7 +65,7 @@ export async function PUT(
         role,
         status,
         avatar: avatar || undefined,
-        birthday: birthday ? new Date(birthDate) : undefined,
+        birthday: birthday ? new Date(birthday).toISOString().split('T')[0] : undefined,
         region: region || undefined,
       },
       select: {

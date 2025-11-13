@@ -1,6 +1,6 @@
 import prisma from "@/app/lib/prisma";
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
+import { Prisma, Gender } from '@prisma/client';
 import dayjs from 'dayjs';
 
 // 实现后端分页查询和模糊查询
@@ -31,11 +31,10 @@ export async function GET(req: Request) {
 
     if (name && !type) {
       const orConditions: Prisma.UserWhereInput[] = [
-        { displayName: { contains: name, mode: Prisma.QueryMode.insensitive } },
-        { email: { contains: name, mode: Prisma.QueryMode.insensitive } },
-        { gender: { contains: name, mode: Prisma.QueryMode.insensitive } },
-        { region: { contains: name, mode: Prisma.QueryMode.insensitive } },
-        { status: { contains: name, mode: Prisma.QueryMode.insensitive } },
+        { displayName: { contains: name } },
+        { email: { contains: name } },
+        { region: { contains: name } },
+        { status: { contains: name } },
       ];
       const parsedAge = parseFloat(name);
       if (!isNaN(parsedAge)) {
@@ -44,6 +43,10 @@ export async function GET(req: Request) {
             equals: parsedAge,
           },
         });
+      }
+      const genderMatch = Object.values(Gender).find(g => g.toLowerCase().includes(name.toLowerCase()));
+      if (genderMatch) {
+        orConditions.push({ gender: genderMatch });
       }
       if (getMatchingRole(name).length > 0) {
         orConditions.push({ role: { in: getMatchingRole(name) } });
@@ -73,19 +76,24 @@ export async function GET(req: Request) {
     } else if (name && type) {
       if (type === 'displayName') {
         whereCondition = {
-          displayName: { contains: name, mode: Prisma.QueryMode.insensitive },
+          displayName: { contains: name },
         };
       } else if (type === 'gender') {
-        whereCondition = {
-          gender: { contains: name, mode: Prisma.QueryMode.insensitive },
-        };
+        const genderMatch = Object.values(Gender).find(g => g.toLowerCase() === name.toLowerCase());
+        if (genderMatch) {
+          whereCondition = {
+            gender: genderMatch,
+          };
+        } else {
+          return NextResponse.json({ users: [], totalCount: 0 });
+        }
       } else if (type === 'status') {
         whereCondition = {
-          status: { contains: name, mode: Prisma.QueryMode.insensitive },
+          status: { contains: name },
         };
       } else if (type === 'usermail') {
         whereCondition = {
-          email: { contains: name, mode: Prisma.QueryMode.insensitive },
+          email: { contains: name },
         };
       } else if (type === 'age' && !isNaN(parseFloat(name))) {
         const parsedAge = parseFloat(name);

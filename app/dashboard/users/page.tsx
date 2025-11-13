@@ -20,7 +20,7 @@ import {
   ArrowUpOutlined,
   ArrowDownOutlined,
 } from "@ant-design/icons";
-import { UploadFile, UploadProps } from "antd/es/upload/interface";
+import { UploadProps } from "antd/es/upload/interface";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { fetchWithAuth } from "@/app/lib/api";
 import dayjs from "dayjs";
@@ -650,7 +650,7 @@ export default function UserManagement() {
       {/* 批量创建用户模态框 */}
       <Modal
         title="批量创建用户"
-        visible={batchCreateModalVisible}
+        open={batchCreateModalVisible}
         onOk={handlBatchCreateUsers}
         onCancel={() => {
           setBatchCreateModalVisible(false);
