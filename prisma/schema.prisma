@@ -17,7 +17,11 @@ enum Gender {
   FEMALE
   OTHER
 }
-
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
 model User {
   id                  String              @id @default(uuid())
   displayName         String
@@ -25,6 +29,9 @@ model User {
   avatar        String?
   password            String?
   gender              Gender?
+  role          Role         @default(USER)
+  status        String       @default("ACTIVE")
+
   age                 Int?
   region              String?
   birthday            String?
