@@ -54,7 +54,7 @@ model RideRecordRoute {
   duration          Float     // 单位：秒
   elevation         Float?
   avgSpeed          Float?
-  route             Json      // 存储坐标点数组（[{lat, lng}, ...]）
+  route             Json?     // 改为可选，存储坐标点数组（[{lat, lng}, ...]）
   uphillDistance    Float?
   downhillDistance  Float?
   flatDistance      Float?
