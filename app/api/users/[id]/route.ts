@@ -99,16 +99,26 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.user.update({
-      where: { id: params.id },
-      data: { status: 'inactive' },
+    // 先删除关联的骑行记录路线
+    await prisma.rideRecordRoute.deleteMany({
+      where: { userId: params.id },
     });
 
-    return NextResponse.json({ message: 'User status updated to inactive' });
+    // 再删除关联的手动创建的路线
+    await prisma.manualCreatedRoute.deleteMany({
+      where: { userId: params.id },
+    });
+
+    // 最后删除用户
+    await prisma.user.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Error updating user status:', error);
+    console.error('Error deleting user:', error);
     return NextResponse.json(
-      { error: 'Failed to update user status' },
+      { error: 'Failed to delete user' },
       { status: 500 }
     );
   }
