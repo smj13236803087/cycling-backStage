@@ -41,6 +41,7 @@ model User {
   updatedAt           DateTime            @updatedAt
   rideRecordRoutes    RideRecordRoute[]
   manualCreatedRoutes ManualCreatedRoute[]
+  publishRoutes       UserPublishRoute[]
 }
 
 model RideRecordRoute {
@@ -66,6 +67,25 @@ model RideRecordRoute {
 }
 
 model ManualCreatedRoute {
+  id                String    @id @default(uuid())
+  createdTime       DateTime  @default(now())
+  startName         String
+  startCoord        String
+  endName           String
+  endCoord          String
+  waypoints         Json?     // [{lat, lng}, ...]
+  distance          Float
+  duration          String
+  encodedPolyline   String?   // Google Maps Polyline
+  mainRoute         Json?
+  waypointRoutes    Json?
+  heatConsumption   Float?
+  route             Json?
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+}
+
+model UserPublishRoute {
   id                String    @id @default(uuid())
   createdTime       DateTime  @default(now())
   startName         String
