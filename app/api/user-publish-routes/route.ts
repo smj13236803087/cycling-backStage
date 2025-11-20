@@ -13,6 +13,13 @@ export async function GET() {
         distance: true,
         duration: true,
         heatConsumption: true,
+        elevation: true,
+        avgSpeed: true,
+        uphillDistance: true,
+        downhillDistance: true,
+        flatDistance: true,
+        avgAltitude: true,
+        maxAltitude: true,
         user: {
           select: {
             id: true,
@@ -43,6 +50,13 @@ export async function POST(req: Request) {
       distance,
       duration,
       heatConsumption,
+      elevation,
+      avgSpeed,
+      uphillDistance,
+      downhillDistance,
+      flatDistance,
+      avgAltitude,
+      maxAltitude,
       userId,
     } = await req.json();
 
@@ -55,6 +69,13 @@ export async function POST(req: Request) {
         distance,
         duration,
         heatConsumption: heatConsumption || null,
+        elevation: elevation || null,
+        avgSpeed: avgSpeed || null,
+        uphillDistance: uphillDistance || null,
+        downhillDistance: downhillDistance || null,
+        flatDistance: flatDistance || null,
+        avgAltitude: avgAltitude || null,
+        maxAltitude: maxAltitude || null,
         userId: userId,
       },
       select: {
@@ -66,6 +87,13 @@ export async function POST(req: Request) {
         distance: true,
         duration: true,
         heatConsumption: true,
+        elevation: true,
+        avgSpeed: true,
+        uphillDistance: true,
+        downhillDistance: true,
+        flatDistance: true,
+        avgAltitude: true,
+        maxAltitude: true,
         user: {
           select: {
             id: true,

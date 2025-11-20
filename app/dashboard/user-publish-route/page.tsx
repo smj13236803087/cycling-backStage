@@ -31,6 +31,13 @@ interface Route {
   distance: number;
   duration: string;
   heatConsumption?: number;
+  elevation?: number;
+  avgSpeed?: number;
+  uphillDistance?: number;
+  downhillDistance?: number;
+  flatDistance?: number;
+  avgAltitude?: number;
+  maxAltitude?: number;
   user: {
     id: string;
     displayName: string;
@@ -212,6 +219,13 @@ export default function UserPublishRouteManagement() {
       distance: route.distance,
       duration: route.duration,
       heatConsumption: route.heatConsumption,
+      elevation: route.elevation,
+      avgSpeed: route.avgSpeed,
+      uphillDistance: route.uphillDistance,
+      downhillDistance: route.downhillDistance,
+      flatDistance: route.flatDistance,
+      avgAltitude: route.avgAltitude,
+      maxAltitude: route.maxAltitude,
       userId: route.user.id,
     });
     setIsModalVisible(true);
@@ -626,6 +640,27 @@ export default function UserPublishRouteManagement() {
             <Input placeholder="例如: 01:30:00" />
           </Form.Item>
           <Form.Item name="heatConsumption" label="热量消耗(kcal)">
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item name="elevation" label="爬升高度(米)">
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item name="avgSpeed" label="平均速度(km/h)">
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item name="uphillDistance" label="上坡距离(公里)">
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item name="downhillDistance" label="下坡距离(公里)">
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item name="flatDistance" label="平路距离(公里)">
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item name="avgAltitude" label="平均海拔(米)">
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+          <Form.Item name="maxAltitude" label="最大海拔(米)">
             <InputNumber style={{ width: "100%" }} min={0} />
           </Form.Item>
         </Form>

@@ -64,6 +64,13 @@ export async function GET(req: Request) {
         distance: true,
         duration: true,
         heatConsumption: true,
+        elevation: true,
+        avgSpeed: true,
+        uphillDistance: true,
+        downhillDistance: true,
+        flatDistance: true,
+        avgAltitude: true,
+        maxAltitude: true,
         user: {
           select: {
             id: true,

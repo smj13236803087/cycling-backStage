@@ -9,6 +9,7 @@ import {
   TeamOutlined,
   FileTextOutlined,
   HeatMapOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -62,7 +63,10 @@ export default function DashboardLayout({
 
   useEffect(() => {
     // 根据当前路由更新选中的菜单项和展开的菜单项
-    if (pathname?.includes('/dashboard/users')) {
+    if (pathname?.includes('/dashboard/users/follows')) {
+      setSelectedKey('follows');
+      setOpenKeys(['users-submenu']);
+    } else if (pathname?.includes('/dashboard/users')) {
       setSelectedKey('users');
       setOpenKeys(['users-submenu']);
     } else if (pathname?.includes('/dashboard/manual-createRoute')) {
@@ -71,6 +75,12 @@ export default function DashboardLayout({
     } else if (pathname?.includes('/dashboard/ride-recordRoute')) {
       setSelectedKey('ride-routes');
       setOpenKeys(['ride-routes-submenu']);
+    } else if (pathname?.includes('/dashboard/user-publish-route/liked-routes')) {
+      setSelectedKey('liked-routes');
+      setOpenKeys(['publish-routes-submenu']);
+    } else if (pathname?.includes('/dashboard/user-publish-route')) {
+      setSelectedKey('publish-routes');
+      setOpenKeys(['publish-routes-submenu']);
     } else {
       setSelectedKey('dashboard');
       setOpenKeys([]);
@@ -164,6 +174,11 @@ export default function DashboardLayout({
                   icon: <UserOutlined />,
                   label: <Link href="/dashboard/users">用户列表</Link>,
                 },
+                {
+                  key: 'follows',
+                  icon: <TeamOutlined />,
+                  label: <Link href="/dashboard/users/follows">关注列表</Link>,
+                },
               ],
             },
             {
@@ -187,6 +202,23 @@ export default function DashboardLayout({
                   key: 'ride-routes',
                   icon: <HeatMapOutlined />,
                   label: <Link href="/dashboard/ride-recordRoute">骑行记录路线列表</Link>,
+                },
+              ],
+            },
+            {
+              key: 'publish-routes-submenu',
+              icon: <ShareAltOutlined />,
+              label: '发布路线管理',
+              children: [
+                {
+                  key: 'publish-routes',
+                  icon: <ShareAltOutlined />,
+                  label: <Link href="/dashboard/user-publish-route">发布路线列表</Link>,
+                },
+                {
+                  key: 'liked-routes',
+                  icon: <ShareAltOutlined />,
+                  label: <Link href="/dashboard/user-publish-route/liked-routes">路线点赞列表</Link>,
                 },
               ],
             },

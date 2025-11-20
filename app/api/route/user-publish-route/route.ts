@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const user = await requireAuth();
 
     const data = await req.json();
-    const { userId, startName, startCoord, endName, endCoord, waypoints, distance, duration, encodedPolyline, mainRoute, waypointRoutes, heatConsumption, route } = data;
+    const { userId, startName, startCoord, endName, endCoord, waypoints, distance, duration, encodedPolyline, mainRoute, waypointRoutes, heatConsumption, route, elevation, avgSpeed, uphillDistance, downhillDistance, flatDistance, avgAltitude, maxAltitude } = data;
 
     if (userId !== user.id) {
       return NextResponse.json({ error: "无权操作" }, { status: 403 });
@@ -28,6 +28,13 @@ export async function POST(req: Request) {
         waypointRoutes: waypointRoutes,
         heatConsumption: heatConsumption ?? null,
         route: route ?? null,
+        elevation: elevation ?? null,
+        avgSpeed: avgSpeed ?? null,
+        uphillDistance: uphillDistance ?? null,
+        downhillDistance: downhillDistance ?? null,
+        flatDistance: flatDistance ?? null,
+        avgAltitude: avgAltitude ?? null,
+        maxAltitude: maxAltitude ?? null,
       },
     });
     return NextResponse.json({ routeData });

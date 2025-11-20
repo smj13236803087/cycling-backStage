@@ -25,6 +25,29 @@ export async function GET(req: Request) {
         waypointRoutes: true,
         heatConsumption: true,
         route: true,
+        elevation: true,
+        avgSpeed: true,
+        uphillDistance: true,
+        downhillDistance: true,
+        flatDistance: true,
+        avgAltitude: true,
+        maxAltitude: true,
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        likes: {
+          select: {
+            id: true,
+            userId: true,
+            routeId: true,
+            createdAt: true,
+          },
+        },
       }
     });
 
