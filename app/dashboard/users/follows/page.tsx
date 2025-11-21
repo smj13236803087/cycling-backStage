@@ -5,12 +5,16 @@ import {
   Table,
   Space,
   Button,
+  Modal,
+  Form,
+  Select,
   message,
   Checkbox,
-  Select,
   Input,
 } from "antd";
 import {
+  EditOutlined,
+  DeleteOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
 } from "@ant-design/icons";
@@ -36,8 +40,18 @@ interface Follow {
   };
 }
 
+interface User {
+  id: string;
+  displayName: string;
+  email: string;
+}
+
 export default function FollowsManagement() {
   const [follows, setFollows] = useState<Follow[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
+  const [editingFollow, setEditingFollow] = useState<Follow | null>(null);
   const [wait, setWait] = useState(false);
   const [isSort, setIsSort] = useState(false);
   const [newSearchType, setNewSearchType] = useState("");
@@ -75,8 +89,21 @@ export default function FollowsManagement() {
   }, [hasSearch]);
 
   useEffect(() => {
+    fetchUsers();
     fetchFollows();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetchWithAuth("/api/users");
+      if (!response.ok) throw new Error("Failed to fetch users");
+      const userList = await response.json();
+      setUsers(userList);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      message.error("获取用户列表失败");
+    }
+  };
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => {
@@ -263,6 +290,24 @@ export default function FollowsManagement() {
         </div>
       ),
     },
+    {
+      title: "操作",
+      key: "action",
+      render: (_: any, record: Follow) => (
+        <Space size="middle">
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+            编辑
+          </Button>
+          <Button
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+            danger
+          >
+            删除
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   const triggerSearch = () => {
@@ -281,6 +326,167 @@ export default function FollowsManagement() {
     }
   };
 
+  const handleEdit = (follow: Follow) => {
+    setEditingFollow(follow);
+    form.setFieldsValue({
+      followerId: follow.followerId,
+      followingId: follow.followingId,
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    Modal.confirm({
+      title: "确认删除",
+      content: "您确定要删除该关注关系吗？",
+      okText: "确认",
+      cancelText: "取消",
+      onOk: async () => {
+        setWait(true);
+        try {
+          const response = await fetchWithAuth(`/api/users/follows/${id}`, {
+            method: "DELETE",
+          });
+          if (!response.ok) throw new Error("Failed to delete follow");
+
+          const sortParam = sortConfig.key
+            ? `${sortConfig.key}:${sortConfig.order}`
+            : "";
+          if (hasSearch) {
+            await fetchFollows(
+              pagination.current,
+              pagination.pageSize,
+              newSearchValue,
+              newSearchType,
+              sortParam
+            );
+          } else {
+            await fetchFollows(
+              pagination.current,
+              pagination.pageSize,
+              oldSearchValue,
+              oldSearchType,
+              sortParam
+            );
+          }
+          message.success("关注关系删除成功");
+        } catch (error) {
+          console.error("Error deleting follow:", error);
+          message.error("删除关注关系失败");
+        }
+      },
+    });
+  };
+
+  const handleOk = async () => {
+    try {
+      setIsModalVisible(false);
+      setWait(true);
+      const values = await form.validateFields();
+
+      const response = editingFollow
+        ? await fetchWithAuth(`/api/users/follows/${editingFollow.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+          })
+        : await fetchWithAuth("/api/users/follows", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+          });
+
+      if (!response.ok) {
+        setWait(false);
+        throw new Error(
+          editingFollow ? "Failed to update follow" : "Failed to create follow"
+        );
+      }
+
+      form.resetFields();
+      const sortParam = sortConfig.key
+        ? `${sortConfig.key}:${sortConfig.order}`
+        : "";
+      if (hasSearch) {
+        await fetchFollows(
+          pagination.current,
+          pagination.pageSize,
+          newSearchValue,
+          newSearchType,
+          sortParam
+        );
+      } else {
+        await fetchFollows(
+          pagination.current,
+          pagination.pageSize,
+          oldSearchValue,
+          oldSearchType,
+          sortParam
+        );
+      }
+      message.success(editingFollow ? "关注关系更新成功" : "关注关系添加成功");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      message.error("保存关注关系失败");
+    }
+  };
+
+  const handleDeleteButtonClick = () => {
+    if (selectedRowKeys.length > 0) {
+      Modal.confirm({
+        title: "确认删除",
+        content: "您确定要删除选中的行吗？",
+        okText: "确认",
+        cancelText: "取消",
+        onOk: () => handleBatchDelete(),
+      });
+    } else {
+      message.warning("请选择要删除的行");
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    try {
+      setWait(true);
+      const response = await fetchWithAuth(`/api/users/follows/batch-delete`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedRowKeys }),
+      });
+      if (!response.ok) throw new Error("Failed to delete follows");
+      setSelectedRowKeys([]);
+      const sortParam = sortConfig.key
+        ? `${sortConfig.key}:${sortConfig.order}`
+        : "";
+      if (hasSearch) {
+        await fetchFollows(
+          pagination.current,
+          pagination.pageSize,
+          newSearchValue,
+          newSearchType,
+          sortParam
+        );
+      } else {
+        await fetchFollows(
+          pagination.current,
+          pagination.pageSize,
+          oldSearchValue,
+          oldSearchType,
+          sortParam
+        );
+      }
+      message.success("批量删除成功");
+    } catch (error) {
+      setWait(false);
+      console.error("Error deleting follows:", error);
+      message.error("批量删除失败");
+    }
+  };
+
   const searchOptions = [
     { label: "综合", value: "" },
     { label: "关注者", value: "follower" },
@@ -289,6 +495,25 @@ export default function FollowsManagement() {
 
   return (
     <div>
+      <Button
+        onClick={() => {
+          setEditingFollow(null);
+          form.resetFields();
+          setIsModalVisible(true);
+        }}
+        type="primary"
+        style={{ marginBottom: 16 }}
+      >
+        添加关注关系
+      </Button>
+      <Button
+        onClick={handleDeleteButtonClick}
+        type="primary"
+        danger
+        style={{ marginBottom: 16, marginLeft: 10 }}
+      >
+        批量删除
+      </Button>
       <div style={{ marginBottom: 16 }}>
         <Space.Compact style={{ width: 400 }}>
           <Select
@@ -329,6 +554,46 @@ export default function FollowsManagement() {
         scroll={{ x: "max-content" }}
         loading={{ spinning: wait, tip: "加载中...", size: "large" }}
       />
+      <Modal
+        title={editingFollow ? "编辑关注关系" : "添加关注关系"}
+        open={isModalVisible}
+        onOk={handleOk}
+        onCancel={() => {
+          setIsModalVisible(false);
+          form.resetFields();
+        }}
+        okText="确定"
+        cancelText="取消"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="followerId"
+            label="关注者"
+            rules={[{ required: true, message: "请选择关注者" }]}
+          >
+            <Select placeholder="选择关注者">
+              {users.map((user) => (
+                <Select.Option key={user.id} value={user.id}>
+                  {user.displayName} ({user.email})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="followingId"
+            label="被关注者"
+            rules={[{ required: true, message: "请选择被关注者" }]}
+          >
+            <Select placeholder="选择被关注者">
+              {users.map((user) => (
+                <Select.Option key={user.id} value={user.id}>
+                  {user.displayName} ({user.email})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

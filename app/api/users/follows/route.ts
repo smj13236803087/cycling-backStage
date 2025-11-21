@@ -110,3 +110,68 @@ export async function GET(req: Request) {
   }
 }
 
+export async function POST(req: Request) {
+  try {
+    const { followerId, followingId } = await req.json();
+
+    if (!followerId || !followingId) {
+      return NextResponse.json(
+        { error: "缺少必要参数" },
+        { status: 400 }
+      );
+    }
+
+    // 不能关注自己
+    if (followerId === followingId) {
+      return NextResponse.json({ error: "不能关注自己" }, { status: 400 });
+    }
+
+    // 检查是否已关注
+    const existingFollow = await prisma.userFollow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: followerId,
+          followingId: followingId,
+        },
+      },
+    });
+
+    if (existingFollow) {
+      return NextResponse.json({ error: "已关注该用户" }, { status: 400 });
+    }
+
+    // 创建关注关系
+    const follow = await prisma.userFollow.create({
+      data: {
+        followerId: followerId,
+        followingId: followingId,
+      },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        following: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(follow, { status: 201 });
+  } catch (error) {
+    console.error("Error creating follow:", error);
+    return NextResponse.json(
+      { error: "Failed to create follow" },
+      { status: 500 }
+    );
+  }
+}
