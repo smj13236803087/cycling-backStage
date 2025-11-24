@@ -60,6 +60,7 @@ export async function POST(req: Request) {
       where: { id: userId },
       data: updateData,
       select: {
+        id: true,
         displayName: true,
         email: true,
         avatar: true,
@@ -70,7 +71,6 @@ export async function POST(req: Request) {
         weight: true,
       },
     });
-
     return NextResponse.json({
       message: `用户字段「${field}」更新成功`,
       user: updatedUser,

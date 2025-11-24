@@ -16,6 +16,7 @@ export async function POST(req: Request) {
     const userInfo = await prisma.user.findUnique({
       where: { id: userId },
       select: {
+        id: true,
         displayName: true,
         email: true,
         avatar: true,
