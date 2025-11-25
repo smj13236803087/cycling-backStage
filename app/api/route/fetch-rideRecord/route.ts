@@ -11,9 +11,9 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ error: "缺少用户ID" }, { status: 400 });
     }
-    if (userId !== user.id) {
-      return NextResponse.json({ error: "无权操作" }, { status: 403 });
-    }
+    // if (userId !== user.id) {
+    //   return NextResponse.json({ error: "无权操作" }, { status: 403 });
+    // }
     const rideRecordRoutes = await prisma.rideRecordRoute.findMany({
       where: { userId },
       select: {
