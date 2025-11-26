@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // 导入你的 authOptions
+import { authOptions } from "@/app/lib/auth-options"; // 导入你的 authOptions
 
 export async function getCurrentUser() {
   const session = await getServerSession(authOptions);
