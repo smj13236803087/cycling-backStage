@@ -21,7 +21,7 @@ export async function sendVerificationCodeEmail(email: string, verificationCode:
     await transporter.sendMail(mailOptions);
 }
 export async function sendVerificationEmail(email: string, token: string) {
-    const verificationUrl = `https://ht7h75x5-3000.asse.devtunnels.ms/api/background-auth/verify-email?token=${token}`;
+    const verificationUrl = `${process.env.BASE_URL}/api/background-auth/verify-email?token=${token}`;
     const mailOptions = {
         from: process.env.SMTP_FROM,
         to: email,
@@ -34,7 +34,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
-    const resetUrl = `https://ht7h75x5-3000.asse.devtunnels.ms/reset-password?token=${token}`;
+    const resetUrl = `${process.env.BASE_URL}/reset-password?token=${token}`;
     const mailOptions = {
         from: process.env.SMTP_FROM,
         to: email,
