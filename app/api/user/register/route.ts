@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     // 检查是否已有 pendingUser 记录
     const existingPending = await prisma.pendingUser.findUnique({ where: { email } });
     if (existingPending) {
-      return NextResponse.json({ message: "该邮箱已发送验证码，请检查邮箱" }, { status: 400 });
+      await prisma.pendingUser.delete({ where: { email } });
     }
 
     // 2️⃣ 哈希密码
