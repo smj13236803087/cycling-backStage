@@ -4,6 +4,8 @@ import {
   DeleteObjectCommand,
   ListObjectsV2Command,
   ListObjectsV2CommandOutput,
+  HeadObjectCommand,
+  HeadObjectCommandOutput,
 } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
 
@@ -45,17 +47,28 @@ export function getCdnBaseUrl(): string {
   return cdnUrl;
 }
 
-export function buildUserSlotKey(userId: string, slotIndex: string | number, ext = "jpg") {
+export function buildUserSlotKey(
+  userId: string,
+  slotIndex: string | number,
+  ext = "jpg",
+  folder = "uploads"
+) {
   const safeExt = ext.replace(/^\./, "") || "jpg";
-  return `uploads/${userId}/slot-${slotIndex}.${safeExt}`;
+  return `${folder}/${userId}/slot-${slotIndex}.${safeExt}`;
 }
 
-export async function uploadToR2(buffer: Buffer, key: string, contentType: string) {
+export async function uploadToR2(
+  buffer: Buffer,
+  key: string,
+  contentType: string,
+  metadata?: Record<string, string>
+) {
   const command = new PutObjectCommand({
     Bucket: getR2BucketName(),
     Key: key,
     Body: buffer,
     ContentType: contentType,
+    Metadata: metadata,
   });
 
   await r2Client.send(command);
@@ -74,6 +87,15 @@ export async function listObjectsByPrefix(prefix: string): Promise<ListObjectsV2
   const command = new ListObjectsV2Command({
     Bucket: getR2BucketName(),
     Prefix: prefix,
+  });
+
+  return r2Client.send(command);
+}
+
+export async function getObjectMetadata(key: string): Promise<HeadObjectCommandOutput> {
+  const command = new HeadObjectCommand({
+    Bucket: getR2BucketName(),
+    Key: key,
   });
 
   return r2Client.send(command);
