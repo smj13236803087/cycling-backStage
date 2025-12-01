@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { listObjectsByPrefix, getCdnBaseUrl, getR2BucketName } from "@/app/lib/r2";
 
 // 打印 S3 客户端配置概览 (不包含密钥)
 console.log("🛠️ S3客户端配置概览:");
@@ -11,17 +8,6 @@ console.log(`端点 (Endpoint): https://${process.env.R2_ACCOUNT_ID}.r2.cloudfla
 console.log(`存储桶名称 (Bucket Name): ${process.env.R2_BUCKET_NAME}`);
 console.log(`CDN 网址 (CDN URL): ${process.env.CDN_URL}`);
 console.log("---");
-
-
-const client = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
-
 // 加载指定用户的所有图片
 export async function POST(req: Request) {
   try {
@@ -38,20 +24,15 @@ export async function POST(req: Request) {
     }
 
     const prefix = `uploads/${userId}/`;
-    const Bucket = process.env.R2_BUCKET_NAME;
+    const Bucket = getR2BucketName();
 
     // 3. 打印 ListObjectsV2Command 参数
     console.log(`🔎 准备列出对象，参数如下:`);
     console.log(`   存储桶 (Bucket): ${Bucket}`);
     console.log(`   前缀 (Prefix): ${prefix}`);
     
-    const command = new ListObjectsV2Command({
-      Bucket,
-      Prefix: prefix,
-    });
-
     // 发送命令
-    const result = await client.send(command);
+    const result = await listObjectsByPrefix(prefix);
 
     // 4. 打印 R2 响应概览
     const contents = result.Contents || [];
@@ -65,7 +46,7 @@ export async function POST(req: Request) {
       .filter((obj) => !!obj.Key)
       .map((obj, index) => {
         const key = obj.Key as string;
-        const url = `${process.env.CDN_URL}/${key}`;
+        const url = `${getCdnBaseUrl()}/${key}`;
         const fileName = key.replace(prefix, ""); // 例如：slot-3.jpg
         const match = fileName.match(/^slot-(\d+)\./);
         let slotIndex: string | null = null;

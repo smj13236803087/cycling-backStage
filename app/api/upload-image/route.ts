@@ -1,28 +1,5 @@
 import { NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const client = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
-
-// 上传到 R2 的函数
-async function uploadToR2(buffer: Buffer, key: string, contentType: string) {
-  const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
-    Key: key,
-    Body: buffer,
-    ContentType: contentType,
-  });
-  await client.send(command);
-}
+import { uploadToR2, buildUserSlotKey, getCdnBaseUrl } from "@/app/lib/r2";
 
 export async function POST(req: Request) {
   try {
@@ -36,8 +13,7 @@ export async function POST(req: Request) {
     }
 
     const ext = file.name.split(".").pop() || "jpg";
-    const fileName = `slot-${slotIndex}.${ext}`;
-    const key = `uploads/${userId}/${fileName}`;
+    const key = buildUserSlotKey(userId, slotIndex, ext);
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -45,7 +21,7 @@ export async function POST(req: Request) {
     await uploadToR2(buffer, key, file.type);
 
     return NextResponse.json({
-      url: `${process.env.CDN_URL}/${key}`,
+      url: `${getCdnBaseUrl()}/${key}`,
       key,
     });
   } catch (err: any) {
