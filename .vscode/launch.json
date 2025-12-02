@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:cycling-backstage}/Spintrix-Pilot_副本",
+            "name": "Debug cycling (Spintrix-Pilot_副本)",
+            "program": "${workspaceFolder:cycling-backstage}/Spintrix-Pilot_副本/.build/debug/cycling",
+            "preLaunchTask": "swift: Build Debug cycling (Spintrix-Pilot_副本)"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:cycling-backstage}/Spintrix-Pilot_副本",
+            "name": "Release cycling (Spintrix-Pilot_副本)",
+            "program": "${workspaceFolder:cycling-backstage}/Spintrix-Pilot_副本/.build/release/cycling",
+            "preLaunchTask": "swift: Build Release cycling (Spintrix-Pilot_副本)"
+        }
+    ]
+}
