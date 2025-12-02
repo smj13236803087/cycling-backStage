@@ -1,6 +1,5 @@
 import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 
 export async function GET(req: Request) {
@@ -13,7 +12,15 @@ export async function GET(req: Request) {
   const sort = url.searchParams.get("sort") || "";
 
   try {
-    let whereCondition: Prisma.ManualCreatedRouteWhereInput = {};
+    // 从 Prisma Client 实例中推断类型，避免直接依赖 Prisma 命名空间里的具体类型名
+    type ManualCreatedRouteWhereInput = NonNullable<
+      Parameters<typeof prisma.manualCreatedRoute.findMany>[0]
+    >["where"];
+    type ManualCreatedRouteOrderByInput = NonNullable<
+      Parameters<typeof prisma.manualCreatedRoute.findMany>[0]
+    >["orderBy"];
+
+    let whereCondition: ManualCreatedRouteWhereInput = {};
 
     if (keyword && !type) {
       whereCondition = {
@@ -39,9 +46,7 @@ export async function GET(req: Request) {
       }
     }
 
-    let orderByCondition:
-      | Prisma.ManualCreatedRouteOrderByWithRelationInput
-      | Prisma.ManualCreatedRouteOrderByWithRelationInput[] = [];
+    let orderByCondition: ManualCreatedRouteOrderByInput = [];
 
     if (sort) {
       const sortFields = sort.split(",");
