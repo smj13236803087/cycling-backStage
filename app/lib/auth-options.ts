@@ -1,10 +1,10 @@
 import { AuthOptions, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { compare } from "bcryptjs";
+import GoogleProvider from "next-auth/providers/google";
+import bcrypt from "bcryptjs";
 import prisma from "@/app/lib/prisma";
 
-// 扩展 NextAuth 的 User/Session 类型以包含额外的用户数据
 declare module "next-auth" {
   interface User {
     id: string;
@@ -32,7 +32,6 @@ declare module "next-auth" {
   }
 }
 
-// 扩展 JWT Token 类型
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
@@ -47,9 +46,9 @@ declare module "next-auth/jwt" {
   }
 }
 
-// 明确指定 authOptions 的类型为 AuthOptions
 export const authOptions: AuthOptions = {
   providers: [
+    // Credentials 登录
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -57,22 +56,16 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!user || !user.password) {
-          return null;
-        }
+        if (!user || !user.password) return null;
 
-        const isValid = await compare(credentials.password, user.password);
-        if (!isValid) {
-          return null;
-        }
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isValid) return null;
 
         return {
           id: user.id,
@@ -87,9 +80,52 @@ export const authOptions: AuthOptions = {
         } as User;
       },
     }),
+
+    // Google 登录
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
-  
+
   callbacks: {
+    // Google 登录处理数据库同步
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        const email = user.email!;
+        const displayName = user.name;
+
+        // 查数据库
+        let dbUser = await prisma.user.findUnique({ where: { email } });
+
+        if (!dbUser) {
+          // 生成随机哈希密码存数据库（Google 登录不需要密码）
+          const hashedPassword = await bcrypt.hash(email, 10);
+
+          dbUser = await prisma.user.create({
+            data: {
+              email,
+              displayName: displayName || "Google用户",
+              avatar: user.image || null,
+              password: hashedPassword,
+            },
+          });
+        }
+
+        // 覆盖 user 对象，保证 jwt/session 使用数据库信息
+        user.id = dbUser.id;
+        user.displayName = dbUser.displayName;
+        user.avatar = dbUser.avatar;
+        user.gender = dbUser.gender;
+        user.birthday = dbUser.birthday as Date | null;
+        user.region = dbUser.region;
+        user.height = dbUser.height;
+        user.weight = dbUser.weight;
+      }
+      return true;
+    },
+
+    // jwt 回调
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -104,6 +140,8 @@ export const authOptions: AuthOptions = {
       }
       return token;
     },
+
+    // session 回调
     async session({ session, token }) {
       if (token) {
         session.user = {
@@ -120,25 +158,27 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
+        // ✅ 新增 redirect 回调，处理 App scheme
+        async redirect({ url, baseUrl }) {
+          // 如果 url 包含 redirectTo 参数，跳回 App
+          try {
+            const redirectUrl = new URL(url, baseUrl);
+            const appRedirect = redirectUrl.searchParams.get("redirectTo");
+            if (appRedirect) return appRedirect;
+          } catch (_) {}
+          // 默认回到 baseUrl
+          return baseUrl;
+        },
   },
-  
-  session: {
-    strategy: "jwt",
-  },
-  
-  // 🔑 关键：配置 Cookie
+
+  session: { strategy: "jwt" },
+
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: false, // 开发环境设为 false
-      },
+      name: "next-auth.session-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: false },
     },
   },
-  
+
   secret: process.env.NEXTAUTH_SECRET,
 };
-
