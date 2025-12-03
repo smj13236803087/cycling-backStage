@@ -92,21 +92,28 @@ export const authOptions: AuthOptions = {
     // Google 登录处理数据库同步
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        const email = user.email!;
-        const displayName = user.name;
+        const email = user.email;
+        if (!email) return false;
 
-        // 查数据库
+        const displayName =
+          user.name || email.split("@")[0] || "Google用户";
+
         let dbUser = await prisma.user.findUnique({ where: { email } });
 
         if (!dbUser) {
-          // 生成随机哈希密码存数据库（Google 登录不需要密码）
+          // Google 登录用户无需真实密码，这里用邮箱生成一个哈希占位
           const hashedPassword = await bcrypt.hash(email, 10);
 
           dbUser = await prisma.user.create({
             data: {
               email,
-              displayName: displayName || "Google用户",
+              displayName,
               avatar: user.image || null,
+              gender: null,
+              birthday: null,
+              region: null,
+              height: null,
+              weight: null,
               password: hashedPassword,
             },
           });
