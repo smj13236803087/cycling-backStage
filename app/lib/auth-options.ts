@@ -91,13 +91,15 @@ export const authOptions: AuthOptions = {
     AppleProvider({
       clientId: process.env.APPLE_CLIENT_ID!,
       clientSecret: process.env.APPLE_CLIENT_SECRET!,
-      checks: ["state"],   // ❗ 只保留 state，不要 nonce，不要 pkce
       authorization: {
+        url: "https://appleid.apple.com/auth/authorize",
         params: {
-          response_mode: "query",  // ❗ 不要 form_post
+          response_mode: "form_post",   // 关键点！！！必须是这个
+          response_type: "code",
+          scope: "name email",          // 你需要 name 或 email
         },
       },
-    })    
+    })   
   ],
 
   callbacks: {
