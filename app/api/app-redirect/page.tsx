@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';  // ← 加上 useEffect
 import { useSearchParams } from 'next/navigation';
 
-export default function AppRedirect() {
+function AppRedirectContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -37,5 +37,13 @@ export default function AppRedirect() {
         如果没有自动跳转,请关闭此页面并返回 App
       </p>
     </div>
+  );
+}
+
+export default function AppRedirect() {
+  return (
+    <Suspense fallback={<div>加载中...</div>}>
+      <AppRedirectContent />
+    </Suspense>
   );
 }
