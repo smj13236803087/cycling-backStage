@@ -8,7 +8,7 @@ function AppRedirectContent() {
 
   useEffect(() => {
     const redirect = searchParams.get('redirect');
-    
+    console.log('redirect:', redirect);
     if (!redirect || typeof redirect !== 'string') return;
 
     // 获取 session 并生成 token
