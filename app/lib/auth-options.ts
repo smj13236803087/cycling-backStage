@@ -96,7 +96,11 @@ export const authOptions: AuthOptions = {
     // Google 登录处理数据库同步
     async signIn({ user, account }) {
       if (account?.provider === "google" || account?.provider === "apple") {
+        console.log("🍎 Apple 登录回调:");
+        console.log("user:", JSON.stringify(user, null, 2));
+        console.log("account:", JSON.stringify(account, null, 2));
         const email = user.email;
+        console.log("📧 提取的邮箱:", email);
         if (!email) return false;
 
         const displayName =
