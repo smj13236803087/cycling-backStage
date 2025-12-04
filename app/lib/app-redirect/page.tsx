@@ -18,7 +18,7 @@ function AppRedirectContent() {
     })
       .then(res => res.json())
       .then(data => {
-        console.log('✅ 获取到 Token:', data);
+        console.log('获取到 Token:', data);
         
         if (!data.token || !data.user) {
           throw new Error('Token 为空');
@@ -27,7 +27,7 @@ function AppRedirectContent() {
         // 把 token 和用户信息传给 App
         const callbackUrl = new URL(redirect);
         
-        // ⭐ 传递 token
+        // 传递 token
         callbackUrl.searchParams.set('token', data.token);
         
         // 传递用户信息
@@ -41,12 +41,12 @@ function AppRedirectContent() {
         callbackUrl.searchParams.set('height', data.user.height?.toString() || '');
         callbackUrl.searchParams.set('weight', data.user.weight?.toString() || '');
         
-        console.log('🚀 跳转到 App:', callbackUrl.href);
+        console.log('跳转到 App:', callbackUrl.href);
         window.location.href = callbackUrl.href;
       })
       .catch(err => {
-        console.error('❌ 获取 Token 失败:', err);
-        alert('登录失败,请重试');
+        console.error('获取 Token 失败:', err);
+        alert('Login failed, please try again');
       });
   }, [searchParams]);
 
@@ -59,15 +59,15 @@ function AppRedirectContent() {
       height: '100vh',
       fontFamily: 'system-ui'
     }}>
-      <h2>🎉 登录成功!</h2>
-      <p>正在返回 App...</p>
+      <h2>Login Success!</h2>
+      <p>Returning to App...</p>
     </div>
   );
 }
 
 export default function AppRedirect() {
   return (
-    <Suspense fallback={<div>加载中...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <AppRedirectContent />
     </Suspense>
   );
