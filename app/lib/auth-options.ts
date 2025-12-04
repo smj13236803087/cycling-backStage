@@ -165,11 +165,11 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
-        // ✅ 新增 redirect 回调，处理 App scheme
+        // 新增 redirect 回调，处理 App scheme
         async redirect({ url, baseUrl }) {
           console.log("🔄 NextAuth redirect:", url);
           
-          // NextAuth 会自动跳转到 callbackUrl (也就是你的 /app-redirect 页面)
+          // NextAuth 会自动跳转到 callbackUrl (也就是/app-redirect 页面)
           // 不需要特殊处理,保持默认行为即可
           
           if (url.startsWith("/")) return `${baseUrl}${url}`;
