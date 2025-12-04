@@ -174,58 +174,25 @@ export const authOptions: AuthOptions = {
       return session;
     },
         // 新增 redirect 回调，处理 App scheme
-        async redirect({ url, baseUrl }) {
-          console.log("🔄 NextAuth redirect:", url);
+        // async redirect({ url, baseUrl }) {
+        //   console.log("🔄 NextAuth redirect:", url);
           
-          // NextAuth 会自动跳转到 callbackUrl (也就是/app-redirect 页面)
-          // 不需要特殊处理,保持默认行为即可
+        //   // NextAuth 会自动跳转到 callbackUrl (也就是/app-redirect 页面)
+        //   // 不需要特殊处理,保持默认行为即可
           
-          if (url.startsWith("/")) return `${baseUrl}${url}`;
-          else if (new URL(url).origin === baseUrl) return url;
-          return baseUrl;
-        }
+        //   if (url.startsWith("/")) return `${baseUrl}${url}`;
+        //   else if (new URL(url).origin === baseUrl) return url;
+        //   return baseUrl;
+        // }
   },
 
   session: { strategy: "jwt" },
 
-// 文件: auth-options.ts (在 authOptions.cookies 内部)
-
-cookies: {
-  // 1. Session Token (保留 name，或者省略 name 但保持结构)
-  sessionToken: {
-    name: "next-auth.session-token", // 明确指定 name
-    options: {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.startsWith('https') ? true : false,
+  cookies: {
+    sessionToken: {
+      name: "next-auth.session-token",
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: true },
     },
   },
-
-  // 2. PKCE code_verifier
-  pkceCodeVerifier: {
-    // ⚠️ 修复：明确指定 name
-    name: "next-auth.pkce.code_verifier", 
-    options: {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.startsWith('https') ? true : false,
-    },
-  },
-
-  // 3. PKCE state
-  state: {
-    // ⚠️ 修复：明确指定 name
-    name: "next-auth.state", 
-    options: {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.startsWith('https') ? true : false,
-    }
-  }
-},
-
   secret: process.env.NEXTAUTH_SECRET,
 };
