@@ -89,6 +89,8 @@ export const authOptions: AuthOptions = {
     AppleProvider({
       clientId: process.env.APPLE_CLIENT_ID!,
       clientSecret: process.env.APPLE_CLIENT_SECRET!,
+      // 关闭 PKCE，避免 App 端无法携带 code_verifier cookie
+      checks: ["state", "nonce"],
     }),
   ],
 
