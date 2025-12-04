@@ -188,12 +188,44 @@ export const authOptions: AuthOptions = {
 
   session: { strategy: "jwt" },
 
-  cookies: {
-    sessionToken: {
-      name: "next-auth.session-token",
-      options: { httpOnly: true, sameSite: "lax", path: "/", secure: false },
+// 文件: auth-options.ts (在 authOptions.cookies 内部)
+
+cookies: {
+  // 1. Session Token (保留 name，或者省略 name 但保持结构)
+  sessionToken: {
+    name: "next-auth.session-token", // 明确指定 name
+    options: {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      secure: process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.startsWith('https') ? true : false,
     },
   },
+
+  // 2. PKCE code_verifier
+  pkceCodeVerifier: {
+    // ⚠️ 修复：明确指定 name
+    name: "next-auth.pkce.code_verifier", 
+    options: {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      secure: process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.startsWith('https') ? true : false,
+    },
+  },
+
+  // 3. PKCE state
+  state: {
+    // ⚠️ 修复：明确指定 name
+    name: "next-auth.state", 
+    options: {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      secure: process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.startsWith('https') ? true : false,
+    }
+  }
+},
 
   secret: process.env.NEXTAUTH_SECRET,
 };
