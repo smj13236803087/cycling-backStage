@@ -1,11 +1,13 @@
+'use client';
+
 import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useSearchParams } from 'next/navigation';
 
 export default function AppRedirect() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const { redirect } = router.query;
+    const redirect = searchParams.get('redirect');
     
     if (redirect && typeof redirect === 'string') {
       console.log('🚀 准备跳转到 App:', redirect);
@@ -18,7 +20,7 @@ export default function AppRedirect() {
         alert('请在 App 中打开此页面');
       }, 3000);
     }
-  }, [router.query]);
+  }, [searchParams]);
 
   return (
     <div style={{ 
