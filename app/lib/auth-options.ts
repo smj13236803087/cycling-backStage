@@ -91,9 +91,13 @@ export const authOptions: AuthOptions = {
     AppleProvider({
       clientId: process.env.APPLE_CLIENT_ID!,
       clientSecret: process.env.APPLE_CLIENT_SECRET!,
-      // 关闭 PKCE，避免 App 端无法携带 code_verifier cookie
-      checks: ["state", "nonce"],
-    }),
+      checks: ["state"],   // ❗ 只保留 state，不要 nonce，不要 pkce
+      authorization: {
+        params: {
+          response_mode: "query",  // ❗ 不要 form_post
+        },
+      },
+    })    
   ],
 
   callbacks: {
