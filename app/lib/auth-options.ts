@@ -5,6 +5,8 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "@/app/lib/prisma";
 import AppleProvider from "next-auth/providers/apple";
+
+const isProd = process.env.NODE_ENV === "production";
 declare module "next-auth" {
   interface User {
     id: string;
@@ -193,7 +195,31 @@ export const authOptions: AuthOptions = {
   cookies: {
     sessionToken: {
       name: "next-auth.session-token",
-      options: { httpOnly: true, sameSite: "lax", path: "/", secure: true },
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProd,
+      },
+    },
+    // Apple Provider 默认使用 form_post 回调（跨站 POST），SameSite=Lax 不会携带 Cookie
+    pkceCodeVerifier: {
+      name: "__Secure-next-auth.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: isProd ? "none" : "lax",
+        path: "/",
+        secure: isProd,
+      },
+    },
+    state: {
+      name: "__Secure-next-auth.state",
+      options: {
+        httpOnly: true,
+        sameSite: isProd ? "none" : "lax",
+        path: "/",
+        secure: isProd,
+      },
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
