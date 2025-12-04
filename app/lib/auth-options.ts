@@ -194,6 +194,15 @@ export const authOptions: AuthOptions = {
         //   else if (new URL(url).origin === baseUrl) return url;
         //   return baseUrl;
         // }
+        async redirect({ url, baseUrl }) {
+          // 支持自定义 scheme
+          if (url.startsWith("spintrix://")) return url;
+      
+          // 默认网站跳转
+          if (url.startsWith(baseUrl)) return url;
+      
+          return baseUrl;
+        }
   },
 
   session: { strategy: "jwt" },
