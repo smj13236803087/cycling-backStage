@@ -167,25 +167,13 @@ export const authOptions: AuthOptions = {
     },
         // ✅ 新增 redirect 回调，处理 App scheme
         async redirect({ url, baseUrl }) {
-          console.log("--- NextAuth Redirect 回调 ---");
-          console.log("url:", url);
-          console.log("baseUrl:", baseUrl);
+          console.log("🔄 NextAuth redirect:", url);
           
-          try {
-            const redirectUrl = new URL(url, baseUrl);
-            console.log("完整 URL:", redirectUrl.href);
-            console.log("所有参数:", Object.fromEntries(redirectUrl.searchParams));
-            
-            const appRedirect = redirectUrl.searchParams.get("callbackUrl");
-            if (appRedirect) {
-              console.log("✅ 找到 callbackUrl,准备跳转到:", appRedirect);
-              return appRedirect;
-            }
-          } catch (error) {
-            console.error("❌ 解析失败:", error);
-          }
+          // NextAuth 会自动跳转到 callbackUrl (也就是你的 /app-redirect 页面)
+          // 不需要特殊处理,保持默认行为即可
           
-          console.log("🏠 使用默认跳转:", baseUrl);
+          if (url.startsWith("/")) return `${baseUrl}${url}`;
+          else if (new URL(url).origin === baseUrl) return url;
           return baseUrl;
         }
   },
