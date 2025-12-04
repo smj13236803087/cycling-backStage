@@ -11,34 +11,42 @@ function AppRedirectContent() {
     
     if (!redirect || typeof redirect !== 'string') return;
 
-    // 在浏览器环境中获取 session
-    fetch('/api/auth/session')
+    // 获取 session 并生成 token
+    fetch('/api/auth/app-token', {
+      method: 'POST',
+      credentials: 'include', // 重要:携带 Cookie
+    })
       .then(res => res.json())
-      .then(session => {
-        console.log('✅ 获取到 Session:', session);
+      .then(data => {
+        console.log('✅ 获取到 Token:', data);
         
-        if (!session?.user) {
-          throw new Error('Session 为空');
+        if (!data.token || !data.user) {
+          throw new Error('Token 为空');
         }
 
-        // 把用户信息编码到 URL 中
+        // 把 token 和用户信息传给 App
         const callbackUrl = new URL(redirect);
         
-        // 方式 1: 直接传递用户信息
-        callbackUrl.searchParams.set('id', session.user.id || '');
-        callbackUrl.searchParams.set('email', session.user.email || '');
-        callbackUrl.searchParams.set('name', session.user.name || '');
-        callbackUrl.searchParams.set('image', session.user.image || '');
+        // ⭐ 传递 token
+        callbackUrl.searchParams.set('token', data.token);
         
-        // 方式 2: 或者传递整个 session JSON
-        // callbackUrl.searchParams.set('session', JSON.stringify(session));
+        // 传递用户信息
+        callbackUrl.searchParams.set('id', data.user.id);
+        callbackUrl.searchParams.set('email', data.user.email || '');
+        callbackUrl.searchParams.set('displayName', data.user.displayName || '');
+        callbackUrl.searchParams.set('avatar', data.user.avatar || '');
+        callbackUrl.searchParams.set('gender', data.user.gender || '');
+        callbackUrl.searchParams.set('birthday', data.user.birthday || '');
+        callbackUrl.searchParams.set('region', data.user.region || '');
+        callbackUrl.searchParams.set('height', data.user.height?.toString() || '');
+        callbackUrl.searchParams.set('weight', data.user.weight?.toString() || '');
         
         console.log('🚀 跳转到 App:', callbackUrl.href);
         window.location.href = callbackUrl.href;
       })
       .catch(err => {
-        console.error('❌ 获取 Session 失败:', err);
-        alert('登录失败，请重试');
+        console.error('❌ 获取 Token 失败:', err);
+        alert('登录失败,请重试');
       });
   }, [searchParams]);
 
