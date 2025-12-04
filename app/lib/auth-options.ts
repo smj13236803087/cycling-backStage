@@ -4,7 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "@/app/lib/prisma";
-
+import AppleProvider from "next-auth/providers/apple";
 declare module "next-auth" {
   interface User {
     id: string;
@@ -86,17 +86,21 @@ export const authOptions: AuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    AppleProvider({
+      clientId: process.env.APPLE_CLIENT_ID!,
+      clientSecret: process.env.APPLE_CLIENT_SECRET!,
+    }),
   ],
 
   callbacks: {
     // Google 登录处理数据库同步
     async signIn({ user, account }) {
-      if (account?.provider === "google") {
+      if (account?.provider === "google" || account?.provider === "apple") {
         const email = user.email;
         if (!email) return false;
 
         const displayName =
-          user.name || email.split("@")[0] || "Google用户";
+          user.name || email.split("@")[0] || `${account?.provider}用户`;
 
         let dbUser = await prisma.user.findUnique({ where: { email } });
 
