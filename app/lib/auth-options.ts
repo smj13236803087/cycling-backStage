@@ -167,15 +167,27 @@ export const authOptions: AuthOptions = {
     },
         // ✅ 新增 redirect 回调，处理 App scheme
         async redirect({ url, baseUrl }) {
-          // 如果 url 包含 redirectTo 参数，跳回 App
+          console.log("--- NextAuth Redirect 回调 ---");
+          console.log("url:", url);
+          console.log("baseUrl:", baseUrl);
+          
           try {
             const redirectUrl = new URL(url, baseUrl);
-            const appRedirect = redirectUrl.searchParams.get("redirectTo");
-            if (appRedirect) return appRedirect;
-          } catch (_) {}
-          // 默认回到 baseUrl
+            console.log("完整 URL:", redirectUrl.href);
+            console.log("所有参数:", Object.fromEntries(redirectUrl.searchParams));
+            
+            const appRedirect = redirectUrl.searchParams.get("callbackUrl");
+            if (appRedirect) {
+              console.log("✅ 找到 callbackUrl,准备跳转到:", appRedirect);
+              return appRedirect;
+            }
+          } catch (error) {
+            console.error("❌ 解析失败:", error);
+          }
+          
+          console.log("🏠 使用默认跳转:", baseUrl);
           return baseUrl;
-        },
+        }
   },
 
   session: { strategy: "jwt" },
