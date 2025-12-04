@@ -12,7 +12,7 @@ function AppRedirectContent() {
     if (!redirect || typeof redirect !== 'string') return;
 
     // 获取 session 并生成 token
-    fetch('/api/auth/app-token', {
+    fetch('/api/app-token', {
       method: 'POST',
       credentials: 'include', // 重要:携带 Cookie
     })
