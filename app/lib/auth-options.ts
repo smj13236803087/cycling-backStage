@@ -194,15 +194,6 @@ export const authOptions: AuthOptions = {
         //   else if (new URL(url).origin === baseUrl) return url;
         //   return baseUrl;
         // }
-        async redirect({ url, baseUrl }) {
-          // 支持自定义 scheme
-          if (url.startsWith("spintrix://")) return url;
-      
-          // 默认网站跳转
-          if (url.startsWith(baseUrl)) return url;
-      
-          return baseUrl;
-        }
   },
 
   session: { strategy: "jwt" },
@@ -231,6 +222,15 @@ export const authOptions: AuthOptions = {
       name: "__Secure-next-auth.state",
       options: {
         httpOnly: true,
+        sameSite: isProd ? "none" : "lax",
+        path: "/",
+        secure: isProd,
+      },
+    },
+    callbackUrl: {
+      name: "__Secure-next-auth.callback-url",
+      options: {
+        httpOnly: false,           // 这里通常需要 false，前端可读
         sameSite: isProd ? "none" : "lax",
         path: "/",
         secure: isProd,
