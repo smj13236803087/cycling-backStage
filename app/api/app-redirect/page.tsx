@@ -25,6 +25,7 @@ function AppRedirectContent() {
         const callbackUrl = new URL(redirect);
         
         // 方式 1: 直接传递用户信息
+        callbackUrl.searchParams.set('id', session.user.id || '');
         callbackUrl.searchParams.set('email', session.user.email || '');
         callbackUrl.searchParams.set('name', session.user.name || '');
         callbackUrl.searchParams.set('image', session.user.image || '');
