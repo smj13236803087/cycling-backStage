@@ -94,9 +94,9 @@ export const authOptions: AuthOptions = {
       authorization: {
         url: "https://appleid.apple.com/auth/authorize",
         params: {
-          response_mode: "form_post",   // 关键点！！！必须是这个
+          response_mode: "form_post",
           response_type: "code",
-          scope: "name email",          // 你需要 name 或 email
+          scope: "name email",
         },
       },
     })   
@@ -106,11 +106,11 @@ export const authOptions: AuthOptions = {
     // Google 登录处理数据库同步
     async signIn({ user, account }) {
       if (account?.provider === "google" || account?.provider === "apple") {
-        console.log("🍎 Apple 登录回调:");
+        console.log("Apple 登录回调:");
         console.log("user:", JSON.stringify(user, null, 2));
         console.log("account:", JSON.stringify(account, null, 2));
         const email = user.email;
-        console.log("📧 提取的邮箱:", email);
+        console.log("提取的邮箱:", email);
         if (!email) return false;
 
         const displayName =
