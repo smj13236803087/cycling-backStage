@@ -72,6 +72,9 @@ export default function DashboardLayout({
     } else if (pathname?.includes('/dashboard/manual-createRoute')) {
       setSelectedKey('manual-routes');
       setOpenKeys(['manual-routes-submenu']);
+    } else if (pathname?.includes('/dashboard/ride-statistics')) {
+      setSelectedKey('ride-statistics');
+      setOpenKeys(['ride-routes-submenu']);
     } else if (pathname?.includes('/dashboard/ride-recordRoute')) {
       setSelectedKey('ride-routes');
       setOpenKeys(['ride-routes-submenu']);
@@ -202,6 +205,11 @@ export default function DashboardLayout({
                   key: 'ride-routes',
                   icon: <HeatMapOutlined />,
                   label: <Link href="/dashboard/ride-recordRoute">骑行记录路线列表</Link>,
+                },
+                {
+                  key: 'ride-statistics',
+                  icon: <HeatMapOutlined />,
+                  label: <Link href="/dashboard/ride-statistics">骑行统计列表</Link>,
                 },
               ],
             },

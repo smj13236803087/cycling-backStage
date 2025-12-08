@@ -39,6 +39,7 @@ model User {
   createdTime         DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
   rideRecordRoutes    RideRecordRoute[]
+  rideStatistics      RideStatistics[]
   manualCreatedRoutes ManualCreatedRoute[]
   publishRoutes       UserPublishRoute[]
   followers           UserFollow[]        @relation("UserFollowers")  // 关注我的人
@@ -47,6 +48,28 @@ model User {
 }
 
 model RideRecordRoute {
+  id                String    @id @default(uuid())
+  startCoordinate   String
+  endCoordinate     String
+  startAddress      String
+  endAddress        String
+  createdTime       DateTime  @default(now())
+  distance          Float     // 单位：米
+  duration          Float     // 单位：秒
+  elevation         Float?
+  avgSpeed          Float?
+  route             Json?     // 改为可选，存储坐标点数组（[{lat, lng}, ...]）
+  uphillDistance    Float?
+  downhillDistance  Float?
+  flatDistance      Float?
+  avgAltitude       Float?
+  maxAltitude       Float?
+  heatConsumption   Float?
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+}
+
+model RideStatistics {
   id                String    @id @default(uuid())
   startCoordinate   String
   endCoordinate     String
