@@ -46,9 +46,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 验证用户身份（可选，但建议添加）
+    // 验证用户身份（可选）。某些移动端/外部浏览器可能未携带会话。
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id || session.user.id !== userId) {
+    if (!session?.user?.id) {
+      console.warn("[Strava Callback] session missing, fallback to state userId", {
+        userIdFromState: userId,
+      });
+      // 继续处理，但依赖 state 传递的 userId。若需要更高安全性，可改为签名 state。
+    } else if (session.user.id !== userId) {
+      console.warn("[Strava Callback] session user mismatch", {
+        sessionUserId: session.user.id,
+        stateUserId: userId,
+      });
       return NextResponse.redirect(
         new URL("/dashboard?strava_error=unauthorized", request.url)
       );
