@@ -111,22 +111,61 @@ export const authOptions: AuthOptions = {
 
   callbacks: {
     // OAuth 登录处理数据库同步
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (account?.provider === "google" || account?.provider === "apple" || account?.provider === "twitter") {
-        console.log(`${account?.provider} 登录回调:`);
-        console.log("user:", JSON.stringify(user, null, 2));
-        console.log("account:", JSON.stringify(account, null, 2));
+        console.log(`\n========== ${account?.provider.toUpperCase()} 登录回调 ==========`);
+        
+        // Twitter 登录时打印所有详细信息
+        if (account?.provider === "twitter") {
+          console.log("\n🐦 Twitter 登录 - 完整信息输出:");
+          console.log("\n--- User 对象 (NextAuth 处理后的用户信息) ---");
+          console.log(JSON.stringify(user, null, 2));
+          console.log("\n--- Account 对象 (OAuth 账户信息) ---");
+          console.log(JSON.stringify(account, null, 2));
+          console.log("\n--- Profile 对象 (Twitter 原始返回的用户信息) ---");
+          console.log(JSON.stringify(profile, null, 2));
+          
+          // 打印各个字段的详细信息
+          console.log("\n--- 字段详情 ---");
+          console.log("User ID:", user.id);
+          console.log("User Name:", user.name);
+          console.log("User Email:", user.email);
+          console.log("User Image:", user.image);
+          console.log("Account Provider:", account.provider);
+          console.log("Account Type:", account.type);
+          console.log("Account Provider Account ID:", account.providerAccountId);
+          console.log("Account Access Token:", account.access_token ? "存在 (已隐藏)" : "不存在");
+          console.log("Account Refresh Token:", account.refresh_token ? "存在 (已隐藏)" : "不存在");
+          console.log("Account Expires At:", account.expires_at ? new Date(account.expires_at * 1000).toISOString() : "不存在");
+          console.log("Account Scope:", account.scope);
+          console.log("Account Token Type:", account.token_type);
+          
+          if (profile) {
+            console.log("\n--- Profile 字段详情 ---");
+            Object.keys(profile).forEach(key => {
+              console.log(`${key}:`, (profile as any)[key]);
+            });
+          }
+        } else {
+          console.log(`${account?.provider} 登录回调:`);
+          console.log("user:", JSON.stringify(user, null, 2));
+          console.log("account:", JSON.stringify(account, null, 2));
+        }
         
         // Twitter 可能不返回 email，需要特殊处理
         let email = user.email;
         if (account?.provider === "twitter" && !email) {
+          console.log("\n⚠️ Twitter 未返回 email，使用占位邮箱");
           // Twitter OAuth 2.0 需要 users.read 权限才能获取 email
           // 如果没有 email，使用 Twitter ID 生成一个占位邮箱
           email = `twitter_${user.id}@twitter.placeholder`;
         }
         
-        console.log("提取的邮箱:", email);
-        if (!email) return false;
+        console.log("\n提取的邮箱:", email);
+        if (!email) {
+          console.log("❌ 邮箱为空，登录失败");
+          return false;
+        }
 
         const displayName =
           user.name || email.split("@")[0] || `${account?.provider}用户`;
@@ -166,8 +205,15 @@ export const authOptions: AuthOptions = {
     },
 
     // jwt 回调
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
+        // Twitter 登录时打印 JWT token 信息
+        if (account?.provider === "twitter") {
+          console.log("\n🔐 Twitter JWT 回调:");
+          console.log("User 对象:", JSON.stringify(user, null, 2));
+          console.log("Token 对象 (更新前):", JSON.stringify(token, null, 2));
+        }
+        
         token.id = user.id;
         token.email = user.email;
         token.displayName = user.displayName;
@@ -177,6 +223,10 @@ export const authOptions: AuthOptions = {
         token.region = user.region;
         token.height = user.height;
         token.weight = user.weight;
+        
+        if (account?.provider === "twitter") {
+          console.log("Token 对象 (更新后):", JSON.stringify(token, null, 2));
+        }
       }
       return token;
     },
