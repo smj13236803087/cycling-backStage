@@ -7,7 +7,7 @@ import prisma from "@/app/lib/prisma";
  * 刷新Strava access token
  * POST /api/strava/refresh-token
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // 检查用户是否已登录
     const session = await getServerSession(authOptions);
