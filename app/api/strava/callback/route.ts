@@ -9,10 +9,14 @@ import prisma from "@/app/lib/prisma";
  */
 export async function GET(request: NextRequest) {
   try {
+    console.log("[Strava Callback] request URL:", request.url);
+
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get("code");
     const state = searchParams.get("state");
     const error = searchParams.get("error");
+
+    console.log("[Strava Callback] params", { code, state, error });
 
     // 检查是否有错误
     if (error) {
@@ -49,7 +53,10 @@ export async function GET(request: NextRequest) {
     // 使用code换取access token
     const clientId = process.env.STRAVA_CLIENT_ID;
     const clientSecret = process.env.STRAVA_CLIENT_SECRET;
-    const redirectUri = process.env.STRAVA_REDIRECT_URI || `${request.nextUrl.origin}/api/strava/callback`;
+    // Keep in sync with /api/strava/authorize; avoid BASE_URL to prevent stale domain redirects.
+    const redirectUri =
+      process.env.STRAVA_REDIRECT_URI ||
+      `${request.nextUrl.origin}/api/strava/callback`;
 
     if (!clientId || !clientSecret) {
       return NextResponse.redirect(
@@ -80,6 +87,7 @@ export async function GET(request: NextRequest) {
     }
 
     const tokenData = await tokenResponse.json();
+    console.log("[Strava Callback] tokenData received");
     const {
       access_token,
       refresh_token,

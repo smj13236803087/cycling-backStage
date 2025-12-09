@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
     }
 
     const clientId = process.env.STRAVA_CLIENT_ID;
-    const redirectUri = process.env.STRAVA_REDIRECT_URI || `${process.env.BASE_URL || request.nextUrl.origin}/api/strava/callback`;
+    // Prefer explicit STRAVA_REDIRECT_URI, otherwise use current request origin.
+    // Avoid BASE_URL to prevent sending users to stale domains.
+    const redirectUri =
+      process.env.STRAVA_REDIRECT_URI ||
+      `${request.nextUrl.origin}/api/strava/callback`;
     
     if (!clientId) {
       return NextResponse.json(
