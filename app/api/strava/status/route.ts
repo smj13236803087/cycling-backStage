@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth-options";
 import prisma from "@/app/lib/prisma";
 
+// Force dynamic because session/headers are used.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * 获取用户Strava连接状态
  * GET /api/strava/status

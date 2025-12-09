@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth-options";
 
+// Ensure this route is always dynamic (relies on headers/session).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * 生成Strava OAuth授权URL
  * GET /api/strava/authorize

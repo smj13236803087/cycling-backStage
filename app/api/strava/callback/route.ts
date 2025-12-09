@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth-options";
 import prisma from "@/app/lib/prisma";
 
+// Force dynamic to allow use of request URL/session.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * Strava OAuth回调处理
  * GET /api/strava/callback?code=xxx&state=xxx
