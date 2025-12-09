@@ -5,6 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "@/app/lib/prisma";
 import AppleProvider from "next-auth/providers/apple";
+import TwitterProvider from "next-auth/providers/twitter";
 
 const isProd = process.env.NODE_ENV === "production";
 declare module "next-auth" {
@@ -99,14 +100,19 @@ export const authOptions: AuthOptions = {
           scope: "name email",
         },
       },
-    })   
+    }),
+    // Twitter 登录
+    TwitterProvider({
+      clientId: process.env.TWITTER_CLIENT_ID!,
+      clientSecret: process.env.TWITTER_CLIENT_SECRET!,
+    }),
   ],
 
   callbacks: {
-    // Google 登录处理数据库同步
+    // OAuth 登录处理数据库同步
     async signIn({ user, account }) {
-      if (account?.provider === "google" || account?.provider === "apple") {
-        console.log("Apple 登录回调:");
+      if (account?.provider === "google" || account?.provider === "apple" || account?.provider === "twitter") {
+        console.log(`${account?.provider} 登录回调:`);
         console.log("user:", JSON.stringify(user, null, 2));
         console.log("account:", JSON.stringify(account, null, 2));
         const email = user.email;
@@ -119,7 +125,7 @@ export const authOptions: AuthOptions = {
         let dbUser = await prisma.user.findUnique({ where: { email } });
 
         if (!dbUser) {
-          // Google 登录用户无需真实密码，这里用邮箱生成一个哈希占位
+          // OAuth 登录用户无需真实密码，这里用邮箱生成一个哈希占位
           const hashedPassword = await bcrypt.hash(email, 10);
 
           dbUser = await prisma.user.create({
