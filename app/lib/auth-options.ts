@@ -105,6 +105,7 @@ export const authOptions: AuthOptions = {
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
+      version: "2.0", // 使用 OAuth 2.0
     }),
   ],
 
@@ -115,7 +116,15 @@ export const authOptions: AuthOptions = {
         console.log(`${account?.provider} 登录回调:`);
         console.log("user:", JSON.stringify(user, null, 2));
         console.log("account:", JSON.stringify(account, null, 2));
-        const email = user.email;
+        
+        // Twitter 可能不返回 email，需要特殊处理
+        let email = user.email;
+        if (account?.provider === "twitter" && !email) {
+          // Twitter OAuth 2.0 需要 users.read 权限才能获取 email
+          // 如果没有 email，使用 Twitter ID 生成一个占位邮箱
+          email = `twitter_${user.id}@twitter.placeholder`;
+        }
+        
         console.log("提取的邮箱:", email);
         if (!email) return false;
 
