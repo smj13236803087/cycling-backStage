@@ -193,6 +193,7 @@ export const authOptions: AuthOptions = {
 
         // 覆盖 user 对象，保证 jwt/session 使用数据库信息
         user.id = dbUser.id;
+        user.email = dbUser.email; // 重要：确保 email 被正确传递（包括 Twitter 占位邮箱）
         user.displayName = dbUser.displayName;
         user.avatar = dbUser.avatar;
         user.gender = dbUser.gender;
@@ -200,6 +201,12 @@ export const authOptions: AuthOptions = {
         user.region = dbUser.region;
         user.height = dbUser.height;
         user.weight = dbUser.weight;
+        
+        if (account?.provider === "twitter") {
+          console.log("\n✅ 更新后的 User 对象:");
+          console.log("Email:", user.email);
+          console.log("DisplayName:", user.displayName);
+        }
       }
       return true;
     },
