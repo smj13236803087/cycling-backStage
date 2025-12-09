@@ -54,13 +54,11 @@ export async function GET(request: NextRequest) {
       });
       // 继续处理，但依赖 state 传递的 userId。若需要更高安全性，可改为签名 state。
     } else if (session.user.id !== userId) {
-      console.warn("[Strava Callback] session user mismatch", {
+      console.warn("[Strava Callback] session user mismatch, proceed with state userId", {
         sessionUserId: session.user.id,
         stateUserId: userId,
       });
-      return NextResponse.redirect(
-        new URL("/dashboard?strava_error=unauthorized", request.url)
-      );
+      // 不再中断，继续使用 state 中的 userId 以适配多端登录/外部浏览器。
     }
 
     // 使用code换取access token
