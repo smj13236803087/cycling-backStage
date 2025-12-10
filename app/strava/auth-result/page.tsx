@@ -11,12 +11,12 @@ function AuthResultInner() {
   const reason = searchParams.get("reason");
 
   const isSuccess = status === "success";
-  const title = isSuccess ? "授权成功，请回到 App" : "授权失败";
+  const title = isSuccess ? "Authorization successful, please return to App" : "Authorization failed";
   const subTitle = isSuccess
-    ? "Strava 账号已成功授权。您可以返回 App 继续使用。"
+    ? "Strava account has been successfully authorized. You can return to App to continue using."
     : reason
-    ? `失败原因：${decodeURIComponent(reason)}`
-    : "授权失败，请重试。";
+    ? `Failure reason: ${decodeURIComponent(reason)}`
+    : "Authorization failed, please try again.";
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -24,11 +24,6 @@ function AuthResultInner() {
         status={isSuccess ? "success" : "error"}
         title={title}
         subTitle={subTitle}
-        extra={[
-          <Link key="back" href="/">
-            <Button type="primary">回到 App</Button>
-          </Link>,
-        ]}
       />
     </div>
   );
