@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Layout, Menu, MenuProps } from 'antd'
+import { Layout, Menu, MenuProps, message } from 'antd'
 import {
   UserOutlined,
   DashboardOutlined,
@@ -13,7 +13,7 @@ import {
 } from '@ant-design/icons'
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 const { Sider, Content } = Layout
 
@@ -28,6 +28,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -89,6 +90,27 @@ export default function DashboardLayout({
       setOpenKeys([]);
     }
   }, [pathname]);
+
+  // 处理 Strava 授权成功/失败提示，并清理 URL 参数
+  useEffect(() => {
+    const success = searchParams.get('strava_success');
+    const error = searchParams.get('strava_error');
+
+    if (success) {
+      message.success('Strava 授权成功');
+    } else if (error) {
+      message.error(`Strava 授权失败：${decodeURIComponent(error)}`);
+    } else {
+      return;
+    }
+
+    // 清理 URL 中的参数，避免刷新后重复提示
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('strava_success');
+    params.delete('strava_error');
+    const cleaned = params.toString();
+    router.replace(cleaned ? `${pathname}?${cleaned}` : pathname);
+  }, [pathname, router, searchParams]);
 
   const handleLogout = async () => {
     try {
