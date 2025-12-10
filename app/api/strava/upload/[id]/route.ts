@@ -109,6 +109,12 @@ export async function POST(
 
     // 上传到Strava
     try {
+      console.log('=== 开始上传到Strava ===');
+      console.log('记录ID:', params.id);
+      console.log('类型:', type);
+      console.log('活动名称:', activityName);
+      console.log('路线点数:', finalRoute.length);
+      
       const formData = new FormData();
       const gpxBuffer = Buffer.from(gpxContent, 'utf-8');
       const gpxBlob = new Blob([gpxBuffer], { type: 'application/gpx+xml' });
@@ -117,6 +123,7 @@ export async function POST(
       formData.append('data_type', 'gpx');
       formData.append('sport_type', 'Ride');
 
+      console.log('📤 发送上传请求到Strava...');
       const uploadResponse = await fetch('https://www.strava.com/api/v3/uploads', {
         method: 'POST',
         headers: {
@@ -124,6 +131,8 @@ export async function POST(
         },
         body: formData,
       });
+      
+      console.log('📥 Strava响应状态:', uploadResponse.status, uploadResponse.statusText);
 
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.text();
@@ -145,27 +154,43 @@ export async function POST(
 
       const uploadResult = await uploadResponse.json();
       
+      // 打印上传结果用于调试
+      console.log('=== Strava上传结果 ===');
+      console.log('完整响应:', JSON.stringify(uploadResult, null, 2));
+      console.log('uploadId:', uploadResult.id);
+      console.log('activityId:', uploadResult.activity_id);
+      console.log('status:', uploadResult.status);
+      console.log('是否有activityId:', !!uploadResult.activity_id);
+      console.log('activityId类型:', typeof uploadResult.activity_id);
+      console.log('==================');
+      
       // 如果上传成功且有activityId，保存到数据库
       if (uploadResult.activity_id) {
+        console.log(`准备保存activityId到数据库: ${uploadResult.activity_id}, 类型: ${type}, 记录ID: ${params.id}`);
         try {
           if (type === 'statistics') {
-            await prisma.rideStatistics.update({
+            const updateResult = await prisma.rideStatistics.update({
               where: { id: params.id },
               data: { stravaActivityId: String(uploadResult.activity_id) },
             });
+            console.log('✅ 成功保存到RideStatistics:', updateResult.id, 'stravaActivityId:', updateResult.stravaActivityId);
           } else {
-            await prisma.rideRecordRoute.update({
+            const updateResult = await prisma.rideRecordRoute.update({
               where: { id: params.id },
               data: { stravaActivityId: String(uploadResult.activity_id) },
             });
+            console.log('✅ 成功保存到RideRecordRoute:', updateResult.id, 'stravaActivityId:', updateResult.stravaActivityId);
           }
         } catch (dbError) {
-          console.error('保存Strava活动ID到数据库失败:', dbError);
+          console.error('❌ 保存Strava活动ID到数据库失败:', dbError);
+          console.error('错误详情:', dbError instanceof Error ? dbError.message : String(dbError));
           // 即使保存失败，也返回成功，因为上传已经成功
         }
+      } else {
+        console.log('⚠️ 上传响应中没有activityId，可能正在处理中');
       }
       
-      return NextResponse.json({
+      const responseData = {
         success: true,
         uploadId: uploadResult.id,
         activityId: uploadResult.activity_id,
@@ -173,7 +198,11 @@ export async function POST(
         message: uploadResult.activity_id 
           ? '活动已成功上传' 
           : '活动正在处理中，请稍后查看',
-      });
+      };
+      
+      console.log('📤 返回给前端的响应:', JSON.stringify(responseData, null, 2));
+      
+      return NextResponse.json(responseData);
     } catch (error) {
       console.error('上传过程出错:', error);
       return NextResponse.json(
