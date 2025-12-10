@@ -152,7 +152,7 @@ export async function POST(
         );
       }
 
-      const uploadResult = await uploadResponse.json();
+      let uploadResult = await uploadResponse.json();
       
       // 打印上传结果用于调试
       console.log('=== Strava上传结果 ===');
@@ -163,6 +163,55 @@ export async function POST(
       console.log('是否有activityId:', !!uploadResult.activity_id);
       console.log('activityId类型:', typeof uploadResult.activity_id);
       console.log('==================');
+      
+      // 如果没有立即获得activityId，尝试轮询获取
+      const uploadId = uploadResult.id || uploadResult.id_str;
+      if (!uploadResult.activity_id && uploadId) {
+        console.log('🔄 开始轮询上传状态，uploadId:', uploadId);
+        const maxAttempts = 5; // 最多轮询5次
+        const pollInterval = 2000; // 每次间隔2秒
+        
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          console.log(`⏳ 轮询第 ${attempt}/${maxAttempts} 次...`);
+          
+          // 等待间隔
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+          
+          // 查询上传状态
+          try {
+            const statusResponse = await fetch(`https://www.strava.com/api/v3/uploads/${uploadId}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              },
+            });
+            
+            if (statusResponse.ok) {
+              uploadResult = await statusResponse.json();
+              console.log(`📊 轮询结果 (第${attempt}次):`, JSON.stringify(uploadResult, null, 2));
+              
+              if (uploadResult.activity_id) {
+                console.log('✅ 轮询成功获得activityId:', uploadResult.activity_id);
+                break;
+              }
+              
+              // 如果状态是错误，停止轮询
+              if (uploadResult.error) {
+                console.error('❌ 上传处理出错:', uploadResult.error);
+                break;
+              }
+            } else {
+              console.error(`⚠️ 查询状态失败 (第${attempt}次):`, statusResponse.status, statusResponse.statusText);
+            }
+          } catch (pollError) {
+            console.error(`⚠️ 轮询过程出错 (第${attempt}次):`, pollError);
+          }
+        }
+        
+        if (!uploadResult.activity_id) {
+          console.log('⏰ 轮询超时，未获得activityId，前端需要继续轮询');
+        }
+      }
       
       // 如果上传成功且有activityId，保存到数据库
       if (uploadResult.activity_id) {
