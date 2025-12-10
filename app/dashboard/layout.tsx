@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { Layout, Menu, MenuProps, message } from 'antd'
 import {
   UserOutlined,
@@ -17,7 +17,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 const { Sider, Content } = Layout
 
-export default function DashboardLayout({
+// 将实际逻辑拆分到内部组件，以便外层用 Suspense 包裹
+function DashboardLayoutInner({
   children,
 }: {
   children: React.ReactNode
@@ -267,5 +268,18 @@ export default function DashboardLayout({
         </Content>
       </Layout>
     </Layout>
+  );
+}
+
+// 外层包装 Suspense，解决 Next.js 构建时对 useSearchParams 的要求
+export default function DashboardLayoutWrapper({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <Suspense fallback={null}>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </Suspense>
   );
 }
