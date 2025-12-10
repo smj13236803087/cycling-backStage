@@ -25,13 +25,13 @@ export async function GET(
     const accessToken = await getStravaAccessToken();
     if (!accessToken) {
       return NextResponse.json(
-        { error: "未连接Strava账户，请先授权", requiresAuth: true },
+        { error: "未连接Strava账户,请先授权", requiresAuth: true },
         { status: 401 }
       );
     }
 
     const uploadId = params.uploadId;
-    console.log('🔍 查询上传状态，uploadId:', uploadId);
+    console.log('查询上传状态,uploadId:', uploadId);
 
     // 查询上传状态
     const statusResponse = await fetch(`https://www.strava.com/api/v3/uploads/${uploadId}`, {
@@ -53,7 +53,7 @@ export async function GET(
 
     const statusResult = await statusResponse.json();
     
-    console.log('📊 上传状态查询结果:', JSON.stringify(statusResult, null, 2));
+    console.log('上传状态查询结果:', JSON.stringify(statusResult, null, 2));
 
     return NextResponse.json({
       uploadId: statusResult.id || statusResult.id_str || uploadId,

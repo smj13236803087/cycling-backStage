@@ -32,7 +32,7 @@ export async function POST(
     const accessToken = await getStravaAccessToken();
     if (!accessToken) {
       return NextResponse.json(
-        { error: "未连接Strava账户，请先授权", requiresAuth: true },
+        { error: "未连接Strava账户,请先授权", requiresAuth: true },
         { status: 401 }
       );
     }
@@ -109,12 +109,6 @@ export async function POST(
 
     // 上传到Strava
     try {
-      console.log('=== 开始上传到Strava ===');
-      console.log('记录ID:', params.id);
-      console.log('类型:', type);
-      console.log('活动名称:', activityName);
-      console.log('路线点数:', finalRoute.length);
-      
       const formData = new FormData();
       const gpxBuffer = Buffer.from(gpxContent, 'utf-8');
       const gpxBlob = new Blob([gpxBuffer], { type: 'application/gpx+xml' });
@@ -123,7 +117,7 @@ export async function POST(
       formData.append('data_type', 'gpx');
       formData.append('sport_type', 'Ride');
 
-      console.log('📤 发送上传请求到Strava...');
+      console.log('发送上传请求到Strava...');
       const uploadResponse = await fetch('https://www.strava.com/api/v3/uploads', {
         method: 'POST',
         headers: {
@@ -132,7 +126,7 @@ export async function POST(
         body: formData,
       });
       
-      console.log('📥 Strava响应状态:', uploadResponse.status, uploadResponse.statusText);
+      console.log('Strava响应状态:', uploadResponse.status, uploadResponse.statusText);
 
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.text();
@@ -154,25 +148,15 @@ export async function POST(
 
       let uploadResult = await uploadResponse.json();
       
-      // 打印上传结果用于调试
-      console.log('=== Strava上传结果 ===');
-      console.log('完整响应:', JSON.stringify(uploadResult, null, 2));
-      console.log('uploadId:', uploadResult.id);
-      console.log('activityId:', uploadResult.activity_id);
-      console.log('status:', uploadResult.status);
-      console.log('是否有activityId:', !!uploadResult.activity_id);
-      console.log('activityId类型:', typeof uploadResult.activity_id);
-      console.log('==================');
-      
       // 如果没有立即获得activityId，尝试轮询获取
       const uploadId = uploadResult.id || uploadResult.id_str;
       if (!uploadResult.activity_id && uploadId) {
-        console.log('🔄 开始轮询上传状态，uploadId:', uploadId);
+        console.log('开始轮询上传状态,uploadId:', uploadId);
         const maxAttempts = 5; // 最多轮询5次
         const pollInterval = 2000; // 每次间隔2秒
         
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-          console.log(`⏳ 轮询第 ${attempt}/${maxAttempts} 次...`);
+          console.log(`轮询第 ${attempt}/${maxAttempts} 次...`);
           
           // 等待间隔
           await new Promise(resolve => setTimeout(resolve, pollInterval));
@@ -188,28 +172,28 @@ export async function POST(
             
             if (statusResponse.ok) {
               uploadResult = await statusResponse.json();
-              console.log(`📊 轮询结果 (第${attempt}次):`, JSON.stringify(uploadResult, null, 2));
+              console.log(`轮询结果 (第${attempt}次):`, JSON.stringify(uploadResult, null, 2));
               
               if (uploadResult.activity_id) {
-                console.log('✅ 轮询成功获得activityId:', uploadResult.activity_id);
+                console.log('轮询成功获得activityId:', uploadResult.activity_id);
                 break;
               }
               
               // 如果状态是错误，停止轮询
               if (uploadResult.error) {
-                console.error('❌ 上传处理出错:', uploadResult.error);
+                console.error('上传处理出错:', uploadResult.error);
                 break;
               }
             } else {
-              console.error(`⚠️ 查询状态失败 (第${attempt}次):`, statusResponse.status, statusResponse.statusText);
+              console.error(`查询状态失败 (第${attempt}次):`, statusResponse.status, statusResponse.statusText);
             }
           } catch (pollError) {
-            console.error(`⚠️ 轮询过程出错 (第${attempt}次):`, pollError);
+            console.error(`轮询过程出错 (第${attempt}次):`, pollError);
           }
         }
         
         if (!uploadResult.activity_id) {
-          console.log('⏰ 轮询超时，未获得activityId，前端需要继续轮询');
+          console.log('轮询超时，未获得activityId，前端需要继续轮询');
         }
       }
       
@@ -222,21 +206,21 @@ export async function POST(
               where: { id: params.id },
               data: { stravaActivityId: String(uploadResult.activity_id) },
             });
-            console.log('✅ 成功保存到RideStatistics:', updateResult.id, 'stravaActivityId:', updateResult.stravaActivityId);
+            console.log('成功保存到RideStatistics:', updateResult.id, 'stravaActivityId:', updateResult.stravaActivityId);
           } else {
             const updateResult = await prisma.rideRecordRoute.update({
               where: { id: params.id },
               data: { stravaActivityId: String(uploadResult.activity_id) },
             });
-            console.log('✅ 成功保存到RideRecordRoute:', updateResult.id, 'stravaActivityId:', updateResult.stravaActivityId);
+            console.log('成功保存到RideRecordRoute:', updateResult.id, 'stravaActivityId:', updateResult.stravaActivityId);
           }
         } catch (dbError) {
-          console.error('❌ 保存Strava活动ID到数据库失败:', dbError);
+          console.error('保存Strava活动ID到数据库失败:', dbError);
           console.error('错误详情:', dbError instanceof Error ? dbError.message : String(dbError));
           // 即使保存失败，也返回成功，因为上传已经成功
         }
       } else {
-        console.log('⚠️ 上传响应中没有activityId，可能正在处理中');
+        console.log('上传响应中没有activityId,可能正在处理中');
       }
       
       const responseData = {
@@ -249,7 +233,7 @@ export async function POST(
           : '活动正在处理中，请稍后查看',
       };
       
-      console.log('📤 返回给前端的响应:', JSON.stringify(responseData, null, 2));
+      console.log('返回给前端的响应:', JSON.stringify(responseData, null, 2));
       
       return NextResponse.json(responseData);
     } catch (error) {
