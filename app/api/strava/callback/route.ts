@@ -25,13 +25,13 @@ export async function GET(request: NextRequest) {
     // 检查是否有错误
     if (error) {
       return NextResponse.redirect(
-        new URL(`/dashboard?strava_error=${encodeURIComponent(error)}`, request.url)
+        new URL(`/strava/auth-result?status=error&reason=${encodeURIComponent(error)}`, request.url)
       );
     }
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL("/dashboard?strava_error=missing_params", request.url)
+        new URL("/strava/auth-result?status=error&reason=missing_params", request.url)
       );
     }
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       userId = stateData.userId;
     } catch (e) {
       return NextResponse.redirect(
-        new URL("/dashboard?strava_error=invalid_state", request.url)
+        new URL("/strava/auth-result?status=error&reason=invalid_state", request.url)
       );
     }
 
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     if (!clientId || !clientSecret) {
       return NextResponse.redirect(
-        new URL("/dashboard?strava_error=config_missing", request.url)
+        new URL("/strava/auth-result?status=error&reason=config_missing", request.url)
       );
     }
 
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       const errorData = await tokenResponse.text();
       console.error("Strava token交换失败:", errorData);
       return NextResponse.redirect(
-        new URL("/dashboard?strava_error=token_exchange_failed", request.url)
+        new URL("/strava/auth-result?status=error&reason=token_exchange_failed", request.url)
       );
     }
 
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 
     if (!access_token || !refresh_token) {
       return NextResponse.redirect(
-        new URL("/dashboard?strava_error=invalid_token_response", request.url)
+        new URL("/strava/auth-result?status=error&reason=invalid_token_response", request.url)
       );
     }
 
@@ -128,12 +128,12 @@ export async function GET(request: NextRequest) {
 
     // 重定向到成功页面
     return NextResponse.redirect(
-      new URL("/dashboard?strava_success=true", request.url)
+      new URL("/strava/auth-result?status=success", request.url)
     );
   } catch (error) {
     console.error("Strava OAuth回调处理失败:", error);
     return NextResponse.redirect(
-      new URL("/dashboard?strava_error=server_error", request.url)
+      new URL("/strava/auth-result?status=error&reason=server_error", request.url)
     );
   }
 }
