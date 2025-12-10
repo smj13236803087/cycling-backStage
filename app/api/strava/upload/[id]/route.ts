@@ -145,6 +145,26 @@ export async function POST(
 
       const uploadResult = await uploadResponse.json();
       
+      // 如果上传成功且有activityId，保存到数据库
+      if (uploadResult.activity_id) {
+        try {
+          if (type === 'statistics') {
+            await prisma.rideStatistics.update({
+              where: { id: params.id },
+              data: { stravaActivityId: String(uploadResult.activity_id) },
+            });
+          } else {
+            await prisma.rideRecordRoute.update({
+              where: { id: params.id },
+              data: { stravaActivityId: String(uploadResult.activity_id) },
+            });
+          }
+        } catch (dbError) {
+          console.error('保存Strava活动ID到数据库失败:', dbError);
+          // 即使保存失败，也返回成功，因为上传已经成功
+        }
+      }
+      
       return NextResponse.json({
         success: true,
         uploadId: uploadResult.id,
