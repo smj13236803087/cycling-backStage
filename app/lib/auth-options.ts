@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import prisma from "@/app/lib/prisma";
 import AppleProvider from "next-auth/providers/apple";
 import TwitterProvider from "next-auth/providers/twitter";
-
+//deploy
 const isProd = process.env.NODE_ENV === "production";
 declare module "next-auth" {
   interface User {
