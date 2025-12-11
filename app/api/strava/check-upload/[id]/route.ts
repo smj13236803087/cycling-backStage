@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth-options";
 import prisma from "@/app/lib/prisma";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 /**
  * 检查某条骑行数据是否已上传到Strava
@@ -22,13 +21,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "未授权，请先登录" },
-        { status: 401 }
-      );
-    }
+    const user = await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'record';
@@ -68,7 +61,7 @@ export async function GET(
     }
 
     // 验证记录是否属于当前用户
-    if (rideData.userId !== session.user.id) {
+    if (rideData.userId !== user.id) {
       return NextResponse.json(
         { error: "无权访问此记录" },
         { status: 403 }

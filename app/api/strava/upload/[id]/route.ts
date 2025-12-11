@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth-options";
 import { getStravaAccessToken } from "@/app/lib/strava";
 import { generateGPX, parseCoordinate } from "@/app/lib/gpx-generator";
 import prisma from "@/app/lib/prisma";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 /**
  * 从数据库记录上传骑行数据到Strava
@@ -21,13 +20,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "未授权，请先登录" },
-        { status: 401 }
-      );
-    }
+    const user = await requireAuth();
 
     const accessToken = await getStravaAccessToken();
     if (!accessToken) {
@@ -61,7 +54,7 @@ export async function POST(
     }
 
     // 验证记录是否属于当前用户
-    if (rideData.userId !== session.user.id) {
+    if (rideData.userId !== user.id) {
       return NextResponse.json(
         { error: "无权访问此记录" },
         { status: 403 }

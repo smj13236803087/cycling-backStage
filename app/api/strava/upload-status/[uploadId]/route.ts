@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth-options";
 import { getStravaAccessToken } from "@/app/lib/strava";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 /**
  * 检查Strava上传状态
@@ -14,13 +13,7 @@ export async function GET(
   { params }: { params: { uploadId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "未授权，请先登录" },
-        { status: 401 }
-      );
-    }
+    await requireAuth();
 
     const accessToken = await getStravaAccessToken();
     if (!accessToken) {

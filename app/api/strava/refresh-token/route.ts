@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth-options";
 import prisma from "@/app/lib/prisma";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 /**
  * 刷新Strava access token
@@ -10,17 +9,11 @@ import prisma from "@/app/lib/prisma";
 export async function POST(request: Request) {
   try {
     // 检查用户是否已登录
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "未授权，请先登录" },
-        { status: 401 }
-      );
-    }
+    const user = await requireAuth();
 
     // 获取用户的refresh token
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const userTokens = await prisma.user.findUnique({
+      where: { id: user.id },
       select: {
         stravaRefreshToken: true,
         stravaAccessToken: true,
@@ -28,7 +21,7 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!user?.stravaRefreshToken) {
+    if (!userTokens?.stravaRefreshToken) {
       return NextResponse.json(
         { error: "未找到Strava refresh token，请重新授权" },
         { status: 400 }
@@ -54,7 +47,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         client_id: clientId,
         client_secret: clientSecret,
-        refresh_token: user.stravaRefreshToken,
+        refresh_token: userTokens.stravaRefreshToken,
         grant_type: "refresh_token",
       }),
     });
@@ -65,7 +58,7 @@ export async function POST(request: Request) {
       
       // 如果refresh token也失效了，清除数据库中的token
       await prisma.user.update({
-        where: { id: session.user.id },
+        where: { id: user.id },
         data: {
           stravaAccessToken: null,
           stravaRefreshToken: null,
@@ -93,7 +86,7 @@ export async function POST(request: Request) {
     const expiresAt = expires_at ? new Date(expires_at * 1000) : null;
 
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: {
         stravaAccessToken: access_token,
         stravaRefreshToken: refresh_token,
@@ -120,16 +113,10 @@ export async function POST(request: Request) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "未授权，请先登录" },
-        { status: 401 }
-      );
-    }
+    const user = await requireAuth();
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const userTokens = await prisma.user.findUnique({
+      where: { id: user.id },
       select: {
         stravaAccessToken: true,
         stravaRefreshToken: true,
@@ -137,7 +124,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    if (!user?.stravaAccessToken || !user?.stravaRefreshToken) {
+    if (!userTokens?.stravaAccessToken || !userTokens?.stravaRefreshToken) {
       return NextResponse.json(
         { error: "未连接Strava账户", requiresAuth: true },
         { status: 400 }
@@ -146,7 +133,7 @@ export async function GET(request: NextRequest) {
 
     // 检查token是否过期（提前5分钟刷新）
     const now = new Date();
-    const expiresAt = user.stravaTokenExpiresAt;
+    const expiresAt = userTokens.stravaTokenExpiresAt;
     const shouldRefresh = !expiresAt || expiresAt.getTime() - now.getTime() < 5 * 60 * 1000;
 
     if (shouldRefresh) {
@@ -163,7 +150,7 @@ export async function GET(request: NextRequest) {
 
       // 重新获取更新后的token
       const updatedUser = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: user.id },
         select: {
           stravaAccessToken: true,
           stravaTokenExpiresAt: true,
@@ -177,7 +164,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      accessToken: user.stravaAccessToken,
+      accessToken: userTokens.stravaAccessToken,
       expiresAt: expiresAt?.toISOString(),
     });
   } catch (error) {

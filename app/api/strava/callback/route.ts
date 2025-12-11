@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth-options";
 import prisma from "@/app/lib/prisma";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 // Force dynamic to allow use of request URL/session.
 export const dynamic = "force-dynamic";
@@ -46,16 +45,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 验证用户身份（可选）。某些移动端/外部浏览器可能未携带会话。
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      console.warn("[Strava Callback] session missing, fallback to state userId", {
-        userIdFromState: userId,
-      });
-      // 继续处理，但依赖 state 传递的 userId。若需要更高安全性，可改为签名 state。
-    } else if (session.user.id !== userId) {
+    // 验证用户身份
+    const authUser = await requireAuth();
+    if (authUser.id !== userId) {
       console.warn("[Strava Callback] session user mismatch, proceed with state userId", {
-        sessionUserId: session.user.id,
+        sessionUserId: authUser.id,
         stateUserId: userId,
       });
       // 不再中断，继续使用 state 中的 userId 以适配多端登录/外部浏览器。

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth-options";
 import prisma from "@/app/lib/prisma";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 // Force dynamic because session/headers are used.
 export const dynamic = "force-dynamic";
@@ -13,16 +12,10 @@ export const revalidate = 0;
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "未授权，请先登录" },
-        { status: 401 }
-      );
-    }
+    const authUser = await requireAuth();
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: authUser.id },
       select: {
         stravaAccessToken: true,
         stravaRefreshToken: true,

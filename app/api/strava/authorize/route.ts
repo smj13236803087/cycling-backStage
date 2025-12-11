@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth-options";
+import { requireAuth } from "@/app/lib/auth-helper";
 
 // Ensure this route is always dynamic (relies on headers/session).
 export const dynamic = "force-dynamic";
@@ -13,13 +12,7 @@ export const revalidate = 0;
 export async function GET(request: NextRequest) {
   try {
     // 检查用户是否已登录
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "未授权，请先登录" },
-        { status: 401 }
-      );
-    }
+    const user = await requireAuth();
 
     const clientId = process.env.STRAVA_CLIENT_ID;
     // Prefer explicit STRAVA_REDIRECT_URI, otherwise use current request origin.
@@ -36,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 生成state参数用于防止CSRF攻击
-    const state = Buffer.from(JSON.stringify({ userId: session.user.id })).toString('base64');
+    const state = Buffer.from(JSON.stringify({ userId: user.id })).toString('base64');
     
     // Strava OAuth授权URL
     const scope = "activity:read,activity:write"; // 读取和写入活动数据
