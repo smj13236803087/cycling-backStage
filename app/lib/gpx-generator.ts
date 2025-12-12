@@ -48,7 +48,7 @@ export function generateGPX(rideData: RideData, activityName?: string): string {
       const pointTime = new Date(startDate.getTime() + index * timeInterval * 1000);
       const lat = point.lat;
       const lng = point.lng;
-      const ele = point.elevation !== undefined ? point.elevation : (elevation || null);
+      const ele = point.elevation !== undefined ? point.elevation : null;
       
       gpx += `
       <trkpt lat="${lat}" lon="${lng}">`;
