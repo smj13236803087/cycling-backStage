@@ -219,9 +219,16 @@ async function fetchStravaActivityStreams(
     );
 
     if (!response.ok) {
-      console.error(
-        `[Strava API] 获取活动流数据失败: ${response.status} ${response.statusText}`
-      );
+      // 404 通常表示活动没有 GPS 数据（例如手动创建的活动）
+      if (response.status === 404) {
+        console.log(
+          `[Strava API] 活动没有 GPS 流数据（可能是手动创建的活动）: activityId=${activityId}`
+        );
+      } else {
+        console.error(
+          `[Strava API] 获取活动流数据失败: ${response.status} ${response.statusText}`
+        );
+      }
       return null;
     }
 
@@ -261,7 +268,11 @@ async function saveActivityToRideStatistics(
     let startAddress = "未知地点";
     let endAddress = "未知地点";
 
+    // 如果有 GPS 流数据，处理完整轨迹
     if (streams?.latlng?.data) {
+      console.log(
+        `[Strava Webhook] 活动包含 GPS 轨迹数据，点数: ${streams.latlng.data.length}`
+      );
       const latlngData = streams.latlng.data; // [[lat, lng], ...]
       const altitudeData = streams.altitude?.data || []; // [altitude, ...]
       const timeData = streams.time?.data || []; // [time, ...]
@@ -292,13 +303,38 @@ async function saveActivityToRideStatistics(
         }
       }
     } else if (activity.start_latlng) {
-      // 如果没有流数据，至少保存起点和终点
+      // 如果没有流数据（手动创建的活动），使用活动详情中的起点和终点坐标
+      // 这些坐标来自 Strava API 的 /activities/{id} 端点返回的 activity 对象
+      // 对于手动创建的活动，可能是：
+      // 1. 用户手动选择的位置
+      // 2. 根据地址反地理编码得到的位置
+      // 3. 如果用户没有输入位置，这些字段可能为 null
+      console.log(
+        `[Strava Webhook] 活动没有 GPS 轨迹，使用活动详情中的坐标:`,
+        {
+          start_latlng: activity.start_latlng,
+          end_latlng: activity.end_latlng,
+          start_address: activity.start_address,
+          end_address: activity.end_address,
+        }
+      );
       startCoordinate = `${activity.start_latlng[0]},${activity.start_latlng[1]}`;
       if (activity.end_latlng) {
         endCoordinate = `${activity.end_latlng[0]},${activity.end_latlng[1]}`;
       } else {
+        // 如果没有终点坐标，使用起点坐标
         endCoordinate = startCoordinate;
+        console.log(
+          `[Strava Webhook] 活动没有终点坐标，使用起点坐标作为终点`
+        );
       }
+    } else {
+      // 如果连 start_latlng 都没有，说明活动完全没有位置信息
+      // 这种情况下 startCoordinate 和 endCoordinate 会是空字符串
+      console.log(
+        `[Strava Webhook] 活动完全没有位置信息（start_latlng 为 null），将使用空字符串`
+      );
+      // startCoordinate 和 endCoordinate 保持为空字符串 ""
     }
 
     // 尝试获取地址信息（如果有）
