@@ -77,8 +77,7 @@ export async function POST(request: NextRequest) {
         // 可以在这里处理活动更新
         break;
       case "delete":
-        console.log("[Strava Webhook] 活动删除事件，暂不处理");
-        // 可以在这里处理活动删除
+        await handleActivityDelete(object_id, owner_id);
         break;
       default:
         console.log("[Strava Webhook] 未知事件类型:", aspect_type);
@@ -91,6 +90,60 @@ export async function POST(request: NextRequest) {
     // 即使出错也要返回 200，避免 Strava 无限重试
     // 但可以在日志中记录错误，后续手动处理
     return NextResponse.json({ received: true });
+  }
+}
+
+/**
+ * 处理活动删除事件
+ */
+async function handleActivityDelete(activityId: number, athleteId: number) {
+  try {
+    console.log(
+      `[Strava Webhook] 处理活动删除: activityId=${activityId}, athleteId=${athleteId}`
+    );
+
+    // 根据 athleteId 查找用户
+    const user = await prisma.user.findFirst({
+      where: {
+        stravaAthleteId: String(athleteId),
+      },
+    });
+
+    if (!user) {
+      console.log(
+        `[Strava Webhook] 未找到对应的用户: athleteId=${athleteId}`
+      );
+      return;
+    }
+
+    // 查找对应的 RideStatistics 记录
+    const existing = await prisma.rideStatistics.findFirst({
+      where: {
+        stravaActivityId: String(activityId),
+        userId: user.id,
+      },
+    });
+
+    if (!existing) {
+      console.log(
+        `[Strava Webhook] 未找到对应的活动记录，可能已被删除: activityId=${activityId}`
+      );
+      return;
+    }
+
+    // 删除记录
+    await prisma.rideStatistics.delete({
+      where: {
+        id: existing.id,
+      },
+    });
+
+    console.log(
+      `[Strava Webhook] ✅ 成功删除活动记录: id=${existing.id}, activityId=${activityId}`
+    );
+  } catch (error) {
+    console.error("[Strava Webhook] 处理活动删除错误:", error);
+    throw error;
   }
 }
 
