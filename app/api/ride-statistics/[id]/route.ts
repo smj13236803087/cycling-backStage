@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-
+//部署vercel上
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
