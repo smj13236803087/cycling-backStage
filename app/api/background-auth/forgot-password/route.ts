@@ -18,7 +18,8 @@ export async function POST(req: Request) {
         await redis.set(
             `password_reset:${resetToken}`,
             email,
-            { ex: 60 * 60 } // 设置过期时间（秒）
+            'EX',
+            60 * 60 // 设置过期时间（秒）
         );
 
         await sendPasswordResetEmail(email, resetToken);

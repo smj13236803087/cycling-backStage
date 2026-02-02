@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/app/lib/prisma";
 import { generateJwt } from "@/app/lib/jwt";
-import redis from '@/app/lib/redis';
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 

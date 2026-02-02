@@ -1,9 +1,9 @@
-import { Redis } from '@upstash/redis'
+import Redis from 'ioredis'
+
 const redis = new Redis({
-  url: 'https://tough-octopus-17454.upstash.io',
-  token: 'AUQuAAIncDI0Nzc2YmQ1ZGM2NGU0NDI3OTE0YmQwNTI0ZWQzYThkY3AyMTc0NTQ',
+  host: process.env.REDIS_WANSHITONG_HOST,
+  port: Number(process.env.REDIS_WANSHITONG_PORT),
+  password: process.env.REDIS_WANSHITONG_PASSWORD,
 })
 
-await redis.set("foo", "bar");
-await redis.get("foo");
 export default redis

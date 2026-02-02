@@ -14,9 +14,9 @@ export async function POST(req: Request) {
         await redis.set(
             `cycling_email_verification:${verificationToken}`,
             email,
-            { ex: 60 * 60 } // 设置过期时间（秒）
+            'EX',
+            60 * 60 // 设置过期时间（秒）- 1 hour expiration
         );
-        // 1 hour expiration
 
         await sendVerificationEmail(email, verificationToken);
 
