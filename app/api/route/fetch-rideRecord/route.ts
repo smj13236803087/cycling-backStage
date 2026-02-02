@@ -27,6 +27,7 @@ export async function POST(req: Request) {
         duration: true,
         elevation: true,
         avgSpeed: true,
+        maxAvgSpeed: true,
         route: true,
         uphillDistance: true,
         downhillDistance: true,
