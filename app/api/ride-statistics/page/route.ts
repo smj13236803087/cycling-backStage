@@ -64,7 +64,7 @@ export async function GET(req: Request) {
         duration: true,
         elevation: true,
         avgSpeed: true,
-        maxAvgSpeed: true,
+        maxSpeed: true,
         uphillDistance: true,
         downhillDistance: true,
         flatDistance: true,

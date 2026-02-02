@@ -422,7 +422,7 @@ async function saveActivityToRideStatistics(
         duration: activity.moving_time || activity.elapsed_time || 0, // 秒
         elevation: activity.total_elevation_gain || null, // 总爬升（米）
         avgSpeed: activity.average_speed || null, // 米/秒
-        maxAvgSpeed: activity.max_speed || null, // 最大速度（米/秒）
+        maxSpeed: activity.max_speed || null, // 最大速度（米/秒）
         route: route || undefined,
         avgAltitude,
         maxAltitude,

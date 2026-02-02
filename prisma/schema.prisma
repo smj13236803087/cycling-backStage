@@ -65,7 +65,7 @@ model RideRecordRoute {
   duration         Float // 单位：秒
   elevation        Float?
   avgSpeed         Float?
-  maxAvgSpeed      Float? // 最大速度
+  maxSpeed         Float? // 最大速度
   route            Json? // 改为可选，存储坐标点数组（[{lat, lng}, ...]）
   uphillDistance   Float?
   downhillDistance Float?
@@ -89,7 +89,7 @@ model RideStatistics {
   duration         Float // 单位：秒
   elevation        Float?
   avgSpeed         Float?
-  maxAvgSpeed      Float? // 最大速度
+  maxSpeed         Float? // 最大速度
   route            Json? // 改为可选，存储坐标点数组（[{lat, lng}, ...]）
   uphillDistance   Float?
   downhillDistance Float?

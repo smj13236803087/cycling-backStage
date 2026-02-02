@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       duration,
       elevation,
       avgSpeed,
-      maxAvgSpeed,
+      maxSpeed,
       route,          // [{lat, lng}, ...]
       uphillDistance,
       downhillDistance,
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         duration: parseFloat(duration),   // 秒
         elevation: elevation ?? null,
         avgSpeed: avgSpeed ?? null,
-        maxAvgSpeed: maxAvgSpeed ?? null,
+        maxSpeed: maxSpeed ?? null,
         route: route ?? [],               // JSON 存储坐标数组
         uphillDistance: uphillDistance ?? null,
         downhillDistance: downhillDistance ?? null,

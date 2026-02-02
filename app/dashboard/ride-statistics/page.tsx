@@ -32,7 +32,7 @@ interface RideStatistics {
   duration: number;
   elevation?: number;
   avgSpeed?: number;
-  maxAvgSpeed?: number;
+  maxSpeed?: number;
   uphillDistance?: number;
   downhillDistance?: number;
   flatDistance?: number;
@@ -221,7 +221,7 @@ export default function RideStatisticsManagement() {
       duration: route.duration,
       elevation: route.elevation,
       avgSpeed: route.avgSpeed,
-      maxAvgSpeed: route.maxAvgSpeed,
+      maxSpeed: route.maxSpeed,
       uphillDistance: route.uphillDistance,
       downhillDistance: route.downhillDistance,
       flatDistance: route.flatDistance,
@@ -653,7 +653,7 @@ export default function RideStatisticsManagement() {
           <Form.Item name="avgSpeed" label="平均速度(m/s)">
             <InputNumber style={{ width: "100%" }} min={0} />
           </Form.Item>
-          <Form.Item name="maxAvgSpeed" label="最大速度(m/s)">
+          <Form.Item name="maxSpeed" label="最大速度(m/s)">
             <InputNumber style={{ width: "100%" }} min={0} />
           </Form.Item>
           <Form.Item name="uphillDistance" label="上升距离(米)">
